@@ -149,15 +149,7 @@ app.post("/api/vault", (req, res, next) => {
         })
     }
 
-
-    //validate contract address
-
-    //console.log(data);
-
-    //create vault
-
     addVault(res, data);
-
 });
 
 function validateVaultPost(postData) {
