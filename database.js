@@ -10,9 +10,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
       //throw err
     }else{
         console.log('Connected to the SQLite database.')
-
         db.run(`CREATE TABLE "vaults" (
-                "id"	id,
+                "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
                 "isLp"	INTEGER NOT NULL,
                 "icon"	TEXT,
@@ -20,27 +19,32 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 "start"	INTEGER,
                 "end"	INTEGER,
                 "locktime"	NUMERIC,
-                "pinned"	NUMERIC,
+                "pinned"	NUMERIC DEFAULT 0,
                 "iconLoaded"	NUMERIC DEFAULT 0,
-                "reward_amount"	NUMERIC,
-                PRIMARY KEY("id")
+                "reward_amount"	NUMERIC
             );`)
 
         db.run(`CREATE TABLE "users"
                 (
                     "id"   TEXT    NOT NULL,
                     "address"  TEXT    NOT NULL,
-                    "created_at"  INTEGER    NOT NULL,
-                    PRIMARY KEY ("id")
+                    "created_at"  INTEGER    NOT NULL
                 )`)
 
         db.run(`CREATE TABLE "users_votes"
                 (
-                    "id"   TEXT    NOT NULL,
+                    "id"   INTEGER PRIMARY KEY,
                     "date" NUMERIC NOT NULL,
                     "uid"  TEXT    NOT NULL,
+                    "vid"  TEXT    NOT NULL
+                )`)
+
+        db.run(`CREATE TABLE "vaults_tvl            "
+                (
+                    "id"   INTEGER PRIMARY KEY,
                     "vid"  TEXT    NOT NULL,
-                    PRIMARY KEY ("id")
+                    "date" NUMERIC NOT NULL,
+                    "tvl"  TEXT    NOT NULL
                 )`)
 
     }
