@@ -33,7 +33,7 @@ function getIcons() {
 
                 processedContracts.push(data.contract);
 
-                if (data.isLp) {
+                if (data.isLp === 'true') {
                     const contract = new ethers.Contract(data.contract, abi, provider);
 
                     let token0 = await contract.token0();

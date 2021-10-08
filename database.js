@@ -46,7 +46,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "img_second"  TEXT
                 )`)
 
-        db.run(`CREATE TABLE "vaults_tvl            "
+        db.run(`CREATE TABLE "vaults_tvl"
                 (
                     "id"   INTEGER PRIMARY KEY,
                     "vid"  TEXT    NOT NULL,
