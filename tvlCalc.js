@@ -7,7 +7,7 @@ const ethers = require('ethers');
 const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.binance.org:443');
 
 
-function getIcons() {
+function calcTvl() {
     var sql = 'select * from vaults'
     var params = []
     db.all(sql, params, async (err, row) => {
@@ -38,12 +38,12 @@ function getIcons() {
 
                                      let reserve1 = reserve._reserve1;
                                      let reserveF1 = ethers.utils.formatUnits(reserve1, 'ether');
-                                     let totalToken1 = parseInt(reserveF1) * priceToken0;
+                                     let totalToken1 = parseInt(reserveF1) * priceToken1;
                                      console.log(totalToken1);
 
                                      let supplyF = ethers.utils.formatUnits(lpSupply, 'ether');
 
-                                     let price = (totalToken0 + totalToken1) / lpSupply;
+                                     let price = supplyF / (totalToken0 + totalToken1);
 
                                      console.log(price);
                                      console.log(supplyF);
@@ -111,4 +111,4 @@ function sleep(miliseconds) {
 }
 
 
-getIcons();
+calcTvl();

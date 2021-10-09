@@ -9,6 +9,7 @@ var moment = require("moment");
 var bodyParser = require("body-parser");
 var userAddress = null;
 var cors = require('cors');
+var sanitizer = require('sanitize')();
 
 app.use(bodyParser.urlencoded({
 	extended: false
@@ -77,6 +78,7 @@ function addVault(res, data) {
 		data.id,
 		data.name,
 		data.isLp,
+		data.stake_contract,
 		data.contract,
 		data.start,
 		data.end,
@@ -131,14 +133,15 @@ function validateAddress(res, address) {
 
 app.post("/api/vault", (req, res, next) => {
 	data = {
-		id: req.body.id,
-		isLp: req.body.isLp,
-		contract: req.body.contract,
-		start: req.body.start,
-		end: req.body.end,
-		locktime: req.body.locktime,
-		name: req.body.name,
-		reward: req.body.reward_amount,
+		id: sanitizer.value(req.body.id, 'string'),
+		isLp: sanitizer.value(req.body.isLp, 'string'),
+		stake_contract: sanitizer.value(req.body.stake_contract, 'string'),
+		contract: sanitizer.value(req.body.contract, 'string'),
+		start: sanitizer.value(req.body.start, 'string'),
+		end: sanitizer.value(req.body.end, 'string'),
+		locktime: sanitizer.value(req.body.locktime, 'string'),
+		name: sanitizer.value(req.body.name, 'string'),
+		reward: sanitizer.value(req.body.reward_amount, 'string'),
 	}
 
 	let errors = validateVaultPost(data);
@@ -157,6 +160,15 @@ app.post("/api/vault", (req, res, next) => {
 			"message": "error",
 			"data": "Invalid Contract"
 		})
+	}
+
+	if(data.stake_contract !== null) {
+		if (!ethers.utils.isAddress(req.body.stake_contract)) {
+			res.status(500).json({
+				"message": "error",
+				"data": "Invalid Stake Contract"
+			})
+		}
 	}
 
 	addVault(res, data);

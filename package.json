@@ -7,12 +7,15 @@
  "author": "BabyDogeTeam",
  "license": "ISC",
  "dependencies": {
+  "cors": "^2.8.5",
   "ethers": "^5.4.7",
   "express": "^4.16.4",
   "md5": "^2.2.1",
+  "sanitize": "^2.1.0",
   "sqlite3": "^4.0.4"
  },
  "devDependencies": {
+  "axios": "^0.22.0",
   "moment": "^2.29.1",
   "nodemon": "^2.0.13"
  }
