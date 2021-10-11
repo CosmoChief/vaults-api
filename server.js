@@ -9,7 +9,7 @@ var moment = require("moment");
 var bodyParser = require("body-parser");
 var userAddress = null;
 var cors = require('cors');
-var sanitizer = require('sanitize')();
+var sanitizer = require('sanitizer');
 
 app.use(bodyParser.urlencoded({
 	extended: false
@@ -65,30 +65,34 @@ function addVault(res, data) {
 	var sql = `INSERT INTO vaults (
                        id,
                        name,
-                       isLp,
-                       contract,
+                       is_lp,
+                       stake_contract,
+                       reward_contract,
                        start,
                        [end],
-                       locktime,
                        reward_amount
                    )
                    VALUES (?,?,?,?,?,?,?,?)`
 
+
+	let start = moment().unix();
+	let end = moment().add(data.days, 'days').unix();
+
 	var params = [
 		data.id,
 		data.name,
-		data.isLp,
+		data.is_lp,
 		data.stake_contract,
-		data.contract,
-		data.start,
-		data.end,
-		data.locktime,
+		data.reward_contract,
+		start,
+		end,
 		data.reward,
 	]
 
 	db.run(sql, params, function(err, result) {
 		if (err) {
-			res.status(500).json("error creating vault")
+			console.log(err.message)
+			//res.status(500).json("error creating vault")
 			return;
 		}
 
@@ -101,7 +105,11 @@ function addVault(res, data) {
 
 function addUser(res, id, address) {
 	var sql = 'INSERT INTO users (id, address, created_at) VALUES (?,?,?)'
-	var params = [id, address, moment().unix()]
+	var params = [
+		sanitizer.sanitize(id),
+		sanitizer.sanitize(address),
+		moment().unix()
+	]
 	db.run(sql, params, function(err, result) {
 		if (err) {
 			res.status(500).json({
@@ -130,22 +138,29 @@ function validateAddress(res, address) {
 	}
 }
 
+function stripHTML(html) {
+  var clean = sanitizer.sanitize(html, function(str) {
+    return str;
+  });
+
+  clean = clean.replace(/<(?:.|\n)*?>/gm, "");
+  clean = clean.replace(/(?:(?:\r\n|\r|\n)\s*){2,}/ig, "\n");
+  return clean.trim();
+}
 
 app.post("/api/vault", (req, res, next) => {
+
 	data = {
-		id: sanitizer.value(req.body.id, 'string'),
-		isLp: sanitizer.value(req.body.isLp, 'string'),
-		stake_contract: sanitizer.value(req.body.stake_contract, 'string'),
-		contract: sanitizer.value(req.body.contract, 'string'),
-		start: sanitizer.value(req.body.start, 'string'),
-		end: sanitizer.value(req.body.end, 'string'),
-		locktime: sanitizer.value(req.body.locktime, 'string'),
-		name: sanitizer.value(req.body.name, 'string'),
-		reward: sanitizer.value(req.body.reward_amount, 'string'),
+		id: sanitizer.sanitize(req.body.id),
+		name: sanitizer.sanitize(req.body.name),
+		is_lp: sanitizer.sanitize(req.body.is_lp),
+		stake_contract: sanitizer.sanitize(req.body.stake_contract),
+		reward_contract: sanitizer.sanitize(req.body.reward_contract),
+		days: sanitizer.sanitize(req.body.days),
+		reward: sanitizer.sanitize(req.body.reward_amount),
 	}
 
 	let errors = validateVaultPost(data);
-
 
 	if (typeof errors !== 'undefined' && errors.length > 0) {
 		res.status(500).json({
@@ -155,20 +170,18 @@ app.post("/api/vault", (req, res, next) => {
 		return false
 	}
 
-	if (!ethers.utils.isAddress(req.body.contract)) {
+	if (!ethers.utils.isAddress(req.body.stake_contract)) {
 		res.status(500).json({
 			"message": "error",
-			"data": "Invalid Contract"
+			"data": "Invalid Stake Contract"
 		})
 	}
 
-	if(data.stake_contract !== null) {
-		if (!ethers.utils.isAddress(req.body.stake_contract)) {
-			res.status(500).json({
-				"message": "error",
-				"data": "Invalid Stake Contract"
-			})
-		}
+	if (!ethers.utils.isAddress(req.body.reward_contract)) {
+		res.status(500).json({
+			"message": "error",
+			"data": "Invalid Reward Contract"
+		})
 	}
 
 	addVault(res, data);
@@ -176,55 +189,42 @@ app.post("/api/vault", (req, res, next) => {
 
 function validateVaultPost(postData) {
 
+	console.log(postData.days);
+
 	let errors = [];
 
-	if (postData.isLp !== "true" && postData.isLp !== "false") {
+	if (postData.name == null) {
+		errors.push(["Invalid name"]);
+	}
+
+	if (postData.is_lp !== "true" && postData.is_lp !== "false") {
 		errors.push(["Vault id must be informed"]);
 	}
 
-	if (postData.isLp !== "true" && postData.isLp !== "false") {
+	if (postData.is_lp !== "true" && postData.is_lp !== "false") {
 		errors.push(["IsLp must be informed"]);
 	}
 
-	/*
-	if(postData.icon) {
-	    errors.push(["IsLp must be informed"]);
-	}
-	*/
-
-	if (postData.contract == null) {
+	if (postData.stake_contract == null) {
 		errors.push(["Contract must be informed"]);
 	}
 
-
-	if (postData.start == null || postData.end == null) {
-		errors.push(["Dates must be informed"]);
+	if (postData.reward_contract == null) {
+		errors.push(["Contract must be informed"]);
 	}
 
-	var dateStart = moment.unix(postData.start);
-	var dateEnd = moment.unix(postData.end);
-
-	if (!dateStart.isValid() || !dateEnd.isValid()) {
-		errors.push(["Dates are invalid"]);
-	}
-
-
-	if (dateStart >= dateEnd) {
-		errors.push(["Start date must be smaller then end date"]);
-	}
-
-	if (!validateNumber(data.locktime)) {
-		errors.push(["Invalid lock time"]);
+	if (postData.days == null || !validateNumber(postData.days)) {
+		errors.push(["Days must be informed"]);
+	}else{
+		let number = parseInt(postData.days);
+		if(!(number >= 1 && number <= 365)) {
+			errors.push(["Dates not allows"]);
+		}
 	}
 
 	if (!validateNumber(data.reward)) {
 		errors.push(["Invalid rewards"]);
 	}
-
-	if (data.name == null) {
-		errors.push(["Invalid name"]);
-	}
-
 
 	return errors;
 }

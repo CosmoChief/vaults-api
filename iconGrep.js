@@ -9,7 +9,7 @@ const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.bin
 
 
 function getIcons() {
-    var sql = 'select * from vaults where tokenImgId = 0 '
+    var sql = 'select * from vaults where token_icon_id = 0 '
     var params = []
 
 
@@ -22,7 +22,7 @@ function getIcons() {
             let processedContracts = [];
             for (const data of row) {
 
-                if (processedContracts.includes(data.contract)) {
+                if (processedContracts.includes(data.reward_contract)) {
                     if (data.tokenImgId === 0) {
                         updateTokenImgIdForContract(data.contract);
                     }
@@ -31,10 +31,10 @@ function getIcons() {
                 }
 
 
-                processedContracts.push(data.contract);
+                processedContracts.push(data.reward_contract);
 
                 if (data.isLp === 'true') {
-                    const contract = new ethers.Contract(data.contract, abi, provider);
+                    const contract = new ethers.Contract(data.reward_contract, abi, provider);
 
                     let token0 = await contract.token0();
                     let token1 = await contract.token1();
@@ -59,21 +59,21 @@ function getIcons() {
                         downloadImg2 = "icons/noimagetoken.png";
                     });
 
-                    savedProcessedLp(data.contract, downloadImg1, downloadImg2);
+                    savedProcessedLp(data.reward_contract, downloadImg1, downloadImg2);
 
                     console.log('done');
                 } else {
-                    let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.contract
+                    let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.reward_contract
 
                     axios.get(url).then(response => {
                         const image = response.data.image.large;
-                        const downloadPath = "icons/" + data.contract + ".png";
+                        const downloadPath = "icons/" + data.reward_contract + ".png";
                         download(image, downloadPath, () => {
                         });
-                        savedProcessedNonLp(data.contract, downloadPath)
+                        savedProcessedNonLp(data.reward_contract, downloadPath)
                     }).catch(error => {
                         const downloadPath = "icons/noimagetoken.png";
-                        savedProcessedNonLp(data.contract, downloadPath)
+                        savedProcessedNonLp(data.reward_contract, downloadPath)
                     });
                 }
             }
@@ -109,7 +109,7 @@ function savedProcessedLp(contract, imgMain, imgSecond) {
 }
 
 function savedProcessedNonLp(contract, name) {
-    var sql = `INSERT INTO token_img (contract,
+    var sql = `INSERT INTO token_icons (contract,
                                       img_main)
                VALUES (?, ?)`
 
@@ -125,7 +125,7 @@ function savedProcessedNonLp(contract, name) {
 
 function updateTokenImgIdForContract(contract) {
     var sql = `select id
-               from token_img
+               from token_icons
                where contract = ?`
 
     var params = [
@@ -135,8 +135,8 @@ function updateTokenImgIdForContract(contract) {
     db.get(sql, params, function (err, result) {
 
         var sql = `update vaults
-                   set tokenImgId = ?
-                   where contract = ?`
+                   set token_icon_id = ?
+                   where reward_contract = ?`
 
         var params = [
             result.id,

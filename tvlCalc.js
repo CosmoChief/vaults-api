@@ -14,7 +14,7 @@ function calcTvl() {
         if (row) {
             for (const data of row) {
                 if (data.isLp === 'true') {
-                    const contract = new ethers.Contract(data.contract, abi, provider);
+                    const contract = new ethers.Contract(data.reward_contract, abi, provider);
 
                     let lpSupply = await contract.totalSupply();
                     let reserve = await contract.getReserves();
@@ -61,7 +61,7 @@ function calcTvl() {
 
 
                 } else {
-                    let url = "https://api.pancakeswap.info/api/v2/tokens/" + data.contract
+                    let url = "https://api.pancakeswap.info/api/v2/tokens/" + data.reward_contract
                     axios.get(url)
                         .then(response => {
                             let price = response['data'].data.price;

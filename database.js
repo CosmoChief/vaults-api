@@ -13,13 +13,12 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         /*db.run(`CREATE TABLE "vaults" (
                 "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
-                "isLp"	INTEGER NOT NULL,
-                "tokenImgId" INTEGER DEFAULT 0,
+                "is_lp"	INTEGER NOT NULL,
+                "token_icon_id" INTEGER DEFAULT 0,
                 "stake_contract" TEXT NOT NULL,
-                "contract" TEXT NOT NULL,
+                "reward_contract" TEXT NOT NULL,
                 "start"	INTEGER,
                 "end"	INTEGER,
-                "locktime"	NUMERIC,
                 "pinned"	NUMERIC DEFAULT 0,
                 "reward_amount"	NUMERIC
             );`)
@@ -39,7 +38,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "vid"  TEXT    NOT NULL
                 )`)
 
-        db.run(`CREATE TABLE "token_img"
+        db.run(`CREATE TABLE "token_icons"
                 (
                     "id"   INTEGER PRIMARY KEY,
                     "contract"  TEXT    NOT NULL,
@@ -54,6 +53,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "date" NUMERIC NOT NULL,
                     "tvl"  TEXT    NOT NULL
                 )`)*/
+
 
     }
 });
