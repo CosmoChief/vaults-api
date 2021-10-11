@@ -24,34 +24,6 @@ app.listen(HTTP_PORT, () => {
 	console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
 });
 
-app.post("/api/bind", async (req, res, next) => {
-
-	if (!validateAddress(res, req.body.address)) {
-		return false;
-	}
-
-	userAddress = req.body.address.toLowerCase();
-
-	createUser(function(err, row) {
-		if (err) {
-			console.error(err.message);
-		}
-		if (row) {
-			res.status(500).json({
-				"message": "Error",
-				"data": "Already binded."
-			});
-		} else {
-			addUser(
-				res,
-				crypto.randomBytes(13).toString('hex'),
-				userAddress
-			)
-		}
-	});
-});
-
-
 var createUser = function(callback) {
 	var sql = "select * from users where address = ?"
 	var params = [userAddress]
@@ -125,6 +97,35 @@ function addUser(res, id, address) {
 	});
 }
 
+function addVote(res, vaultId, voteOption, userId) {
+	var voteDate = moment().unix()
+
+	var sql = `INSERT INTO users_votes (
+                       date,
+                       uid,
+                       vid
+                   )
+                   VALUES (?,?,?)`
+
+	var params = [
+		voteDate,
+		userId,
+		vaultId,
+	]
+
+	db.run(sql, params, function(err, result) {
+		if (err) {
+			res.status(500).json("Error user voting.")
+			return;
+		}
+
+		res.json({
+			"message": "success",
+			"data": "voted."
+		});
+	});
+}
+
 function validateAddress(res, address) {
 	try {
 		ethers.utils.getAddress(address);
@@ -137,55 +138,6 @@ function validateAddress(res, address) {
 		return false;
 	}
 }
-
-function stripHTML(html) {
-  var clean = sanitizer.sanitize(html, function(str) {
-    return str;
-  });
-
-  clean = clean.replace(/<(?:.|\n)*?>/gm, "");
-  clean = clean.replace(/(?:(?:\r\n|\r|\n)\s*){2,}/ig, "\n");
-  return clean.trim();
-}
-
-app.post("/api/vault", (req, res, next) => {
-
-	data = {
-		id: sanitizer.sanitize(req.body.id),
-		name: sanitizer.sanitize(req.body.name),
-		is_lp: sanitizer.sanitize(req.body.is_lp),
-		stake_contract: sanitizer.sanitize(req.body.stake_contract),
-		reward_contract: sanitizer.sanitize(req.body.reward_contract),
-		days: sanitizer.sanitize(req.body.days),
-		reward: sanitizer.sanitize(req.body.reward_amount),
-	}
-
-	let errors = validateVaultPost(data);
-
-	if (typeof errors !== 'undefined' && errors.length > 0) {
-		res.status(500).json({
-			"message": "error",
-			"data": errors.join(', ')
-		})
-		return false
-	}
-
-	if (!ethers.utils.isAddress(req.body.stake_contract)) {
-		res.status(500).json({
-			"message": "error",
-			"data": "Invalid Stake Contract"
-		})
-	}
-
-	if (!ethers.utils.isAddress(req.body.reward_contract)) {
-		res.status(500).json({
-			"message": "error",
-			"data": "Invalid Reward Contract"
-		})
-	}
-
-	addVault(res, data);
-});
 
 function validateVaultPost(postData) {
 
@@ -229,6 +181,117 @@ function validateNumber(number) {
 	var n = Math.floor(Number(number));
 	return n !== Infinity && String(n) === number && n >= 0;
 }
+
+function validateVoteVault(res, vaultId, voteOption, userId) {
+	var sql = "select * from vaults where id = ?"
+	var params = [vaultId]
+	db.get(sql, params, (err, row) => {
+		if (!row) {
+			res.status(500).json("Vault not found.");
+		} else {
+			validateUserVote(res, vaultId, voteOption, userId)
+		}
+	});
+}
+
+function validateUserVote(res, vaultId, voteOption, userId) {
+
+	var sql = "select * from users_votes where uid = ? " +
+		"and DATETIME(date, 'unixepoch') >= datetime('now','-24 hours')";
+
+	var params = [userId]
+	db.get(sql, params, (err, row) => {
+		if (row) {
+			res.status(500).json("Already voted, please wait 24 hours to vote again.");
+		} else {
+			addVote(res, vaultId, voteOption, userId)
+		}
+	});
+}
+
+app.post("/api/bind", async (req, res, next) => {
+
+	if (!validateAddress(res, req.body.address)) {
+		return false;
+	}
+
+	userAddress = req.body.address.toLowerCase();
+
+	createUser(function(err, row) {
+		if (err) {
+			console.error(err.message);
+		}
+		if (row) {
+			res.status(500).json({
+				"message": "Error",
+				"data": "Already binded."
+			});
+		} else {
+			addUser(
+				res,
+				crypto.randomBytes(13).toString('hex'),
+				userAddress
+			)
+		}
+	});
+});
+
+app.post("/api/vault", (req, res, next) => {
+
+	data = {
+		id: sanitizer.sanitize(req.body.id),
+		name: sanitizer.sanitize(req.body.name),
+		is_lp: sanitizer.sanitize(req.body.is_lp),
+		stake_contract: sanitizer.sanitize(req.body.stake_contract),
+		reward_contract: sanitizer.sanitize(req.body.reward_contract),
+		days: sanitizer.sanitize(req.body.days),
+		reward: sanitizer.sanitize(req.body.reward_amount),
+	}
+
+	let errors = validateVaultPost(data);
+
+	if (typeof errors !== 'undefined' && errors.length > 0) {
+		res.status(500).json({
+			"message": "error",
+			"data": errors.join(', ')
+		})
+		return false
+	}
+
+	if (!ethers.utils.isAddress(req.body.stake_contract)) {
+		res.status(500).json({
+			"message": "error",
+			"data": "Invalid Stake Contract"
+		})
+	}
+
+	if (!ethers.utils.isAddress(req.body.reward_contract)) {
+		res.status(500).json({
+			"message": "error",
+			"data": "Invalid Reward Contract"
+		})
+	}
+
+	addVault(res, data);
+});
+
+app.get("/api/tvl", (req, res, next) => {
+	var sql = `select sum(tvl) as total from vaults_tvl;`
+
+	var params = []
+	db.get(sql, params, (err, data) => {
+		if (err) {
+			res.status(400).json({
+				"error": err.message
+			});
+			return;
+		}
+		res.json({
+			"message": "success",
+			"data": data.total
+		})
+	});
+});
 
 app.get("/api/vaults", (req, res, next) => {
 	var sql = `SELECT v.*,
@@ -310,62 +373,6 @@ app.post("/api/vault/vote/:id", (req, res, next) => {
 	});
 });
 
-function validateVoteVault(res, vaultId, voteOption, userId) {
-	var sql = "select * from vaults where id = ?"
-	var params = [vaultId]
-	db.get(sql, params, (err, row) => {
-		if (!row) {
-			res.status(500).json("Vault not found.");
-		} else {
-			validateUserVote(res, vaultId, voteOption, userId)
-		}
-	});
-}
-
-function validateUserVote(res, vaultId, voteOption, userId) {
-
-	var sql = "select * from users_votes where uid = ? " +
-		"and DATETIME(date, 'unixepoch') >= datetime('now','-24 hours')";
-
-	var params = [userId]
-	db.get(sql, params, (err, row) => {
-		if (row) {
-			res.status(500).json("Already voted, please wait 24 hours to vote again.");
-		} else {
-			addVote(res, vaultId, voteOption, userId)
-		}
-	});
-}
-
-function addVote(res, vaultId, voteOption, userId) {
-	var voteDate = moment().unix()
-
-	var sql = `INSERT INTO users_votes (
-                       date,
-                       uid,
-                       vid
-                   )
-                   VALUES (?,?,?)`
-
-	var params = [
-		voteDate,
-		userId,
-		vaultId,
-	]
-
-	db.run(sql, params, function(err, result) {
-		if (err) {
-			res.status(500).json("Error user voting.")
-			return;
-		}
-
-		res.json({
-			"message": "success",
-			"data": "voted."
-		});
-	});
-}
-
 app.post("/api/vault/close", (req, res, next) => {
 	//close vault
 	res.json({
@@ -379,6 +386,7 @@ app.get("/", (req, res, next) => {
 		"message": "Ok"
 	})
 });
+
 app.use(function(req, res) {
 	res.status(404);
 });
