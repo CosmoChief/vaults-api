@@ -201,10 +201,6 @@ function validateVaultPost(postData) {
 		errors.push(["Vault id must be informed"]);
 	}
 
-	if (postData.is_lp !== "true" && postData.is_lp !== "false") {
-		errors.push(["IsLp must be informed"]);
-	}
-
 	if (postData.stake_contract == null) {
 		errors.push(["Contract must be informed"]);
 	}
