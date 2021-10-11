@@ -315,17 +315,62 @@ app.get("/api/tvl", (req, res, next) => {
 	});
 });
 
-app.get("/api/vaults", (req, res, next) => {
-	var sql = `SELECT v.*,
-       COUNT(uv.id) AS votes 
-  FROM vaults as v
-       LEFT JOIN users_votes as uv
-       ON v.id = uv.vid
- GROUP BY v.id 
- ORDER BY votes DESC;`
+app.post("/api/vaults", (req, res, next) => {
 
-	var params = []
-	db.all(sql, params, (err, rows) => {
+	let sortRule =  sanitizer.sanitize(req.body.sort);
+
+	const rules = [
+		'new_to_old',
+		'end_date',
+		'most_votes',
+		'most_votes_today',
+		'most_votes_7_days',
+		'rewards',
+	];
+
+	if(!rules.includes(sortRule)) {
+		res.status(400).json({
+			"error": 'Invalid sort rule'
+		});
+		return;
+	}
+
+	const querySort = {
+		"new_to_old":"ORDER BY ID DESC;",
+		"end_date":"ORDER BY [end] DESC;",
+		"most_votes":"ORDER BY votes DESC;",
+		"most_votes_today":"1",
+		"most_votes_7_days":"7",
+		"rewards":"ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
+	}
+
+	var sql = `SELECT v.*,
+		   COUNT(uv.id) AS votes, 
+		   vrv.usd_rewards_value
+	  FROM vaults as v
+		   LEFT JOIN users_votes as uv
+		   ON v.vid = uv.vid
+		   LEFT JOIN vaults_rewards_value as vrv
+		   ON v.vid = vrv.vid
+
+	 GROUP BY v.id ` + querySort[sortRule]
+
+	 if(sortRule == "most_votes_today" || sortRule == "most_votes_7_days") {
+                let dayNumber = "-"+querySort[sortRule]+" days";
+
+		        sql = `SELECT v.*,
+                       COUNT(uv.id) AS votes, 
+                       vrv.usd_rewards_value
+                   FROM vaults as v
+                       LEFT JOIN users_votes as uv 
+                       ON v.vid = uv.vid and DATETIME(uv.date, 'unixepoch') >= datetime('now', '`+dayNumber+`')
+                       LEFT JOIN vaults_rewards_value as vrv
+                       ON v.vid = vrv.vid
+                  GROUP BY v.id order by votes DESC`
+	 }
+
+
+	db.all(sql, [], (err, rows) => {
 		if (err) {
 			res.status(400).json({
 				"error": err.message
@@ -340,6 +385,8 @@ app.get("/api/vaults", (req, res, next) => {
 });
 
 app.post("/api/vault/pin/:id", (req, res, next) => {
+
+	//random key
 
 	const status = parseInt(req.body.status);
 
@@ -356,7 +403,7 @@ app.post("/api/vault/pin/:id", (req, res, next) => {
 		req.params.id,
 	]
 
-	db.run('UPDATE vaults set pinned = ? WHERE id = ?', params, (err, result) => {
+	db.run('UPDATE vaults set pinned = ? WHERE vid = ?', params, (err, result) => {
 		if (err) {
 			res.status(400).json({
 				"error": err.message

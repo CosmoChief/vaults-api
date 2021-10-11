@@ -66,6 +66,7 @@ function calcTvl() {
                         .then(response => {
                             let price = response['data'].data.price;
                             let total = data.reward_amount * price;
+                            console.log(total);
                             insertTvl(data.id, total);
                         })
                         .catch(error => {
