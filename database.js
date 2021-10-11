@@ -13,6 +13,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         /*db.run(`CREATE TABLE "vaults" (
                 "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
+                "vid"	INTEGER NOT NULL,
                 "is_lp"	INTEGER NOT NULL,
                 "token_icon_id" INTEGER DEFAULT 0,
                 "stake_contract" TEXT NOT NULL,
@@ -46,12 +47,12 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "img_second"  TEXT
                 )`)
 
-        db.run(`CREATE TABLE "vaults_tvl"
+        db.run(`CREATE TABLE "vaults_rewards_value"
                 (
                     "id"   INTEGER PRIMARY KEY,
                     "vid"  TEXT    NOT NULL,
                     "date" NUMERIC NOT NULL,
-                    "tvl"  TEXT    NOT NULL
+                    "usd_rewards_value"  TEXT    NOT NULL
                 )`)*/
 
 

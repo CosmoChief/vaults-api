@@ -10,6 +10,17 @@ var bodyParser = require("body-parser");
 var userAddress = null;
 var cors = require('cors');
 var sanitizer = require('sanitizer');
+const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.binance.org:443');
+
+const minABI = [
+  {
+	constant: true,
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    type: "function",
+  },
+];
 
 app.use(bodyParser.urlencoded({
 	extended: false
@@ -33,25 +44,40 @@ var createUser = function(callback) {
 	});
 };
 
-function addVault(res, data) {
-	var sql = `INSERT INTO vaults (
-                       id,
-                       name,
-                       is_lp,
-                       stake_contract,
-                       reward_contract,
-                       start,
-                       [end],
-                       reward_amount
-                   )
-                   VALUES (?,?,?,?,?,?,?,?)`
+async function getContractNames(stake, reward) {
+	let name
+	if(stake === reward) {
+		const contractStake = new ethers.Contract(stake, minABI, provider);
+		name = await contractStake.name();
+	} else {
+		const contractStake = new ethers.Contract(stake, abi, provider);
+		const contractReward = new ethers.Contract(reward, abi, provider);
+		let nameStake = await contractStake.name();
+		let nameReward = await contractReward.name();
+		name = nameStake + " / " + nameReward;
+	}
+
+	return name;
+}
+
+async function addVault(res, data) {
+	var sql = `INSERT INTO vaults (vid,
+								   name,
+								   is_lp,
+								   stake_contract,
+								   reward_contract,
+								   start,
+								   [end],
+								   reward_amount)
+			   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 
 	let start = moment().unix();
 	let end = moment().add(data.days, 'days').unix();
+	data.name = await getContractNames(data.stake_contract, data.reward_contract);
 
 	var params = [
-		data.id,
+		data.vid,
 		data.name,
 		data.is_lp,
 		data.stake_contract,
@@ -61,7 +87,7 @@ function addVault(res, data) {
 		data.reward,
 	]
 
-	db.run(sql, params, function(err, result) {
+	db.run(sql, params, function (err, result) {
 		if (err) {
 			console.log(err.message)
 			//res.status(500).json("error creating vault")
@@ -140,13 +166,10 @@ function validateAddress(res, address) {
 }
 
 function validateVaultPost(postData) {
-
-	console.log(postData.days);
-
 	let errors = [];
 
-	if (postData.name == null) {
-		errors.push(["Invalid name"]);
+	if (postData.vid == null) {
+		errors.push(["Invalid vid"]);
 	}
 
 	if (postData.is_lp !== "true" && postData.is_lp !== "false") {
@@ -239,8 +262,7 @@ app.post("/api/bind", async (req, res, next) => {
 app.post("/api/vault", (req, res, next) => {
 
 	data = {
-		id: sanitizer.sanitize(req.body.id),
-		name: sanitizer.sanitize(req.body.name),
+		vid: sanitizer.sanitize(req.body.vid),
 		is_lp: sanitizer.sanitize(req.body.is_lp),
 		stake_contract: sanitizer.sanitize(req.body.stake_contract),
 		reward_contract: sanitizer.sanitize(req.body.reward_contract),
@@ -276,7 +298,7 @@ app.post("/api/vault", (req, res, next) => {
 });
 
 app.get("/api/tvl", (req, res, next) => {
-	var sql = `select sum(tvl) as total from vaults_tvl;`
+	var sql = `select sum(usd_rewards_value) as total from vaults_rewards_value;`
 
 	var params = []
 	db.get(sql, params, (err, data) => {

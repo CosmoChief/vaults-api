@@ -81,19 +81,19 @@ function calcTvl() {
 function insertTvl(vid, total) {
 
     var sql = `select *
-               from vaults_tvl
+               from vaults_rewards_value
                where vid = ?`
 
     var params = [moment().unix(), total.toString(), vid]
 
     db.get(sql, [vid], function (err, result) {
-        let sql = `UPDATE vaults_tvl
+        let sql = `UPDATE vaults_rewards_value
                    set date = ?,
-                       tvl  = ?
+                       usd_rewards_value  = ?
                    where vid = ?`
 
         if (!result) {
-            sql = `INSERT INTO vaults_tvl (date, tvl, vid)
+            sql = `INSERT INTO vaults_rewards_value (date, usd_rewards_value, vid)
                    VALUES (?, ?, ?)`
         }
 
