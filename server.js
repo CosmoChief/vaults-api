@@ -315,6 +315,34 @@ app.get("/api/tvl", (req, res, next) => {
 	});
 });
 
+
+app.get("/api/vaults/pinned", (req, res, next) => {
+	var sql = `SELECT v.*,
+		   COUNT(uv.id) AS votes, 
+		   vrv.usd_rewards_value
+	  FROM vaults as v
+		   LEFT JOIN users_votes as uv
+		   ON v.vid = uv.vid
+		   LEFT JOIN vaults_rewards_value as vrv
+		   ON v.vid = vrv.vid
+	  WHERE v.pinned =1 
+	 GROUP BY v.id order by v.id desc`
+
+	db.all(sql, [], (err, rows) => {
+		if (err) {
+			res.status(400).json({
+				"error": err.message
+			});
+			return;
+		}
+		res.json({
+			"message": "success",
+			"data": rows
+		})
+	});
+});
+
+
 app.post("/api/vaults", (req, res, next) => {
 
 	let sortRule =  sanitizer.sanitize(req.body.sort);
@@ -352,7 +380,7 @@ app.post("/api/vaults", (req, res, next) => {
 		   ON v.vid = uv.vid
 		   LEFT JOIN vaults_rewards_value as vrv
 		   ON v.vid = vrv.vid
-
+      where pinned=0
 	 GROUP BY v.id ` + querySort[sortRule]
 
 	 if(sortRule == "most_votes_today" || sortRule == "most_votes_7_days") {
@@ -366,6 +394,7 @@ app.post("/api/vaults", (req, res, next) => {
                        ON v.vid = uv.vid and DATETIME(uv.date, 'unixepoch') >= datetime('now', '`+dayNumber+`')
                        LEFT JOIN vaults_rewards_value as vrv
                        ON v.vid = vrv.vid
+                       where pinned=0
                   GROUP BY v.id order by votes DESC`
 	 }
 
