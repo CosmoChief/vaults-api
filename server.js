@@ -347,7 +347,6 @@ app.post("/api/vaults", (req, res, next) => {
 
     let sortRule = sanitizer.sanitize(req.body.sort);
     let search = sanitizer.sanitize(req.body.search);
-    let querySearch = "";
     let queryParam = [];
 
     if (sortRule === undefined) {
@@ -355,7 +354,6 @@ app.post("/api/vaults", (req, res, next) => {
     }
 
     if (search !== undefined) {
-        querySearch = " and v.name like '%?%'"
         queryParam = [search]
     }
 
@@ -375,43 +373,9 @@ app.post("/api/vaults", (req, res, next) => {
         return;
     }
 
-    const querySort = {
-        "new_to_old": "ORDER BY ID DESC;",
-        "end_date": "ORDER BY [end] DESC;",
-        "most_votes": "ORDER BY votes DESC;",
-        "most_votes_today": "1",
-        "most_votes_7_days": "7",
-        "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
-    }
-
-
-    if (sortRule == "most_votes_today" || sortRule == "most_votes_7_days") {
-        let dayNumber = "-" + querySort[sortRule] + " days";
-        var sql = `SELECT v.*,
-                      COUNT(uv.id) AS votes,
-                      vrv.usd_rewards_value
-               FROM vaults as v
-                        LEFT JOIN users_votes as uv
-                                  ON v.vid = uv.vid and
-                                     DATETIME(uv.date, 'unixepoch') >= datetime('now', '` + dayNumber + `')
-			   LEFT JOIN vaults_rewards_value as vrv
-			   ON v.vid = vrv.vid
-			   where pinned=0
-		  GROUP BY v.id order by votes DESC`
-    } else {
-        var sql = `SELECT v.*,
-                          COUNT(uv.id) AS votes,
-                          vrv.usd_rewards_value
-                   FROM vaults as v
-                            LEFT JOIN users_votes as uv
-                                      ON v.vid = uv.vid
-                            LEFT JOIN vaults_rewards_value as vrv
-                                      ON v.vid = vrv.vid
-                   where pinned = 0` + querySearch + ` GROUP BY v.vid ` + querySort[sortRule]
-    }
+    let sql = prepareQuery(sortRule, search)
 
     console.log(sql);
-    console.log(queryParam);
 
     db.all(sql, queryParam, (err, rows) => {
         if (err) {
@@ -426,6 +390,44 @@ app.post("/api/vaults", (req, res, next) => {
         })
     });
 });
+
+function prepareQuery(sortRule, search){
+
+      const querySort = {
+        "new_to_old": "ORDER BY ID DESC;",
+        "end_date": "ORDER BY [end] DESC;",
+        "most_votes": "ORDER BY votes DESC;",
+        "most_votes_today": "1",
+        "most_votes_7_days": "7",
+        "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
+    }
+
+    const selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value FROM vaults as v"
+
+    var userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
+
+    if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
+        userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
+        +" and DATETIME(uv.date, 'unixepoch') >= datetime('now', '-? days')"
+    }
+
+    const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
+
+    let where = " where pinned = 0"
+
+    console.log(search);
+    if(search !== undefined) {
+        where = where + " and name like '%' || ? || '%'"
+    }
+
+    const groupBy = " GROUP BY v.vid "
+
+    let sortBy = querySort[sortRule]
+
+    return selector + userVoteJoin + vaultRewardsJoin + where + groupBy + sortBy;
+
+}
+
 
 app.post("/api/vault/pin/:id", (req, res, next) => {
 
