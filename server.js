@@ -347,7 +347,12 @@ app.post("/api/vaults", (req, res, next) => {
 
     let sortRule = sanitizer.sanitize(req.body.sort);
     let search = sanitizer.sanitize(req.body.search);
+    let closed = sanitizer.sanitize(req.body.closed);
     let queryParam = [];
+
+    if (closed === undefined) {
+        closed = false
+    }
 
     if (sortRule === undefined) {
         sortRule = 'new_to_old'
@@ -373,7 +378,7 @@ app.post("/api/vaults", (req, res, next) => {
         return;
     }
 
-    let sql = prepareQuery(sortRule, search)
+    let sql = prepareQuery(sortRule, search, closed)
 
    const querySort = {
         "most_votes_today": "1",
@@ -399,7 +404,7 @@ app.post("/api/vaults", (req, res, next) => {
     });
 });
 
-function prepareQuery(sortRule, search){
+function prepareQuery(sortRule, search, closed){
 
       const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
@@ -414,7 +419,7 @@ function prepareQuery(sortRule, search){
 
     var userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
 
-    if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
+    if (!closed && (sortRule === "most_votes_today" || sortRule === "most_votes_7_days")) {
         userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
         +" and DATETIME(uv.date, 'unixepoch') >= datetime('now', ?)"
     }
@@ -425,6 +430,10 @@ function prepareQuery(sortRule, search){
 
     if(search !== undefined) {
         where = where + " and name like '%' || ? || '%'"
+    }
+
+    if(closed) {
+        where = where + " and DATETIME(v.end, 'unixepoch') < datetime('now')"
     }
 
     const groupBy = " GROUP BY v.vid "
