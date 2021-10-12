@@ -375,9 +375,17 @@ app.post("/api/vaults", (req, res, next) => {
 
     let sql = prepareQuery(sortRule, search)
 
-    console.log(sql);
+   const querySort = {
+        "most_votes_today": "1",
+        "most_votes_7_days": "7",
+    }
+
+   if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
+        queryParam.unshift("-"+querySort[sortRule]+" days");
+   }
 
     db.all(sql, queryParam, (err, rows) => {
+        console.log(err);
         if (err) {
             res.status(400).json({
                 "error": err.message
@@ -397,8 +405,8 @@ function prepareQuery(sortRule, search){
         "new_to_old": "ORDER BY ID DESC;",
         "end_date": "ORDER BY [end] DESC;",
         "most_votes": "ORDER BY votes DESC;",
-        "most_votes_today": "1",
-        "most_votes_7_days": "7",
+        "most_votes_today": "ORDER BY votes DESC;",
+        "most_votes_7_days": "ORDER BY votes DESC;",
         "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
     }
 
@@ -408,14 +416,13 @@ function prepareQuery(sortRule, search){
 
     if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
         userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
-        +" and DATETIME(uv.date, 'unixepoch') >= datetime('now', '-? days')"
+        +" and DATETIME(uv.date, 'unixepoch') >= datetime('now', ?)"
     }
 
     const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
 
     let where = " where pinned = 0"
 
-    console.log(search);
     if(search !== undefined) {
         where = where + " and name like '%' || ? || '%'"
     }
