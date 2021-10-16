@@ -21,7 +21,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 "start"	INTEGER,
                 "end"	INTEGER,
                 "pinned"	NUMERIC DEFAULT 0,
-                "reward_amount"	NUMERIC
+                "reward_amount"	TEXT NOT NULL
             );`)
 
         db.run(`CREATE TABLE "users"

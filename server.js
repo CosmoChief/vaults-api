@@ -9,8 +9,9 @@ var moment = require("moment");
 var bodyParser = require("body-parser");
 var userAddress = null;
 var cors = require('cors');
+var bigInt = require("big-integer");
 var sanitizer = require('sanitizer');
-const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.binance.org:443');
+const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-2-s2.binance.org:8545/');
 
 const minABI = [
     {
@@ -29,7 +30,7 @@ app.use(bodyParser.urlencoded({
 app.use(cors());
 app.use(bodyParser.json());
 
-var HTTP_PORT = 8033
+var HTTP_PORT = 8031
 
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
@@ -61,16 +62,10 @@ async function getContractNames(stake, reward) {
 }
 
 async function addVault(res, data) {
-    var sql = `INSERT INTO vaults (vid,
-                                   name,
-                                   is_lp,
-                                   stake_contract,
-                                   reward_contract,
-                                   start,
-        [ end],
-                                   reward_amount)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-
+    var sql = `INSERT INTO vaults 
+                (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
+               VALUES 
+                (?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
     let end = moment().add(data.days, 'days').unix();
@@ -191,7 +186,7 @@ function validateVaultPost(postData) {
         }
     }
 
-    if (!validateNumber(data.reward)) {
+    if (!validateBigNumber(data.reward)) {
         errors.push(["Invalid rewards"]);
     }
 
@@ -201,6 +196,16 @@ function validateVaultPost(postData) {
 function validateNumber(number) {
     var n = Math.floor(Number(number));
     return n !== Infinity && String(n) === number && n >= 0;
+}
+
+function validateBigNumber(number) {
+    let data = BigInt(number);
+
+    if(data.toString() === "0") {
+        return false;
+    }
+
+    return true;
 }
 
 function validateVoteVault(res, vaultId, voteOption, userId) {
