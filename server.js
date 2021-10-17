@@ -140,7 +140,7 @@ function addVote(res, vaultId, voteOption, userId) {
 
         res.json({
             "message": "success",
-            "data": "voted."
+            "data": "Success! You can vote again in 24 hours."
         });
     });
 }
@@ -478,7 +478,8 @@ app.post("/api/vault/pin/:id", (req, res, next) => {
     db.run('UPDATE vaults set pinned = ? WHERE vid = ?', params, (err, result) => {
         if (err) {
             res.status(400).json({
-                "error": err.message
+                "message": "error",
+                "data": err.message
             })
             return;
         }
