@@ -62,13 +62,13 @@ async function getContractNames(stake, reward) {
 }
 
 async function addVault(res, data) {
-    var sql = `INSERT INTO vaults 
-                (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
-               VALUES 
-                (?, ?, ?, ?, ?, ?, ?, ?)`
+    var sql = `INSERT INTO vaults
+               (vid, name, is_lp, stake_contract, reward_contract, start, [ end], reward_amount)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
     let end = moment().add(data.days, 'days').unix();
+    console.log(end);
     data.name = await getContractNames(data.stake_contract, data.reward_contract);
 
     var params = [
@@ -150,7 +150,7 @@ function validateAddress(res, address) {
         ethers.utils.getAddress(address);
         return true;
     } catch (error) {
-        res.json({
+        res.status(500).json({
             "message": "error",
             "data": "Invalid address."
         })
@@ -201,7 +201,7 @@ function validateNumber(number) {
 function validateBigNumber(number) {
     let data = BigInt(number);
 
-    if(data.toString() === "0") {
+    if (data.toString() === "0") {
         return false;
     }
 
@@ -209,11 +209,14 @@ function validateBigNumber(number) {
 }
 
 function validateVoteVault(res, vaultId, voteOption, userId) {
-    var sql = "select * from vaults where id = ?"
+    var sql = "select * from vaults where vid = ?"
     var params = [vaultId]
     db.get(sql, params, (err, row) => {
         if (!row) {
-            res.status(500).json("Vault not found.");
+            res.status(500).json({
+                "message": "error",
+                "data": "Vault not found."
+            })
         } else {
             validateUserVote(res, vaultId, voteOption, userId)
         }
@@ -228,7 +231,10 @@ function validateUserVote(res, vaultId, voteOption, userId) {
     var params = [userId]
     db.get(sql, params, (err, row) => {
         if (row) {
-            res.status(500).json("Already voted, please wait 24 hours to vote again.");
+            res.status(500).json({
+                "message": "error",
+                "data": "Already voted, please wait 24 hours to vote again."
+            })
         } else {
             addVote(res, vaultId, voteOption, userId)
         }
@@ -385,14 +391,14 @@ app.post("/api/vaults", (req, res, next) => {
 
     let sql = prepareQuery(sortRule, search, closed)
 
-   const querySort = {
+    const querySort = {
         "most_votes_today": "1",
         "most_votes_7_days": "7",
     }
 
-   if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
-        queryParam.unshift("-"+querySort[sortRule]+" days");
-   }
+    if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
+        queryParam.unshift("-" + querySort[sortRule] + " days");
+    }
 
     db.all(sql, queryParam, (err, rows) => {
         console.log(err);
@@ -409,9 +415,9 @@ app.post("/api/vaults", (req, res, next) => {
     });
 });
 
-function prepareQuery(sortRule, search, closed){
+function prepareQuery(sortRule, search, closed) {
 
-      const querySort = {
+    const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
         "end_date": "ORDER BY [end] DESC;",
         "most_votes": "ORDER BY votes DESC;",
@@ -426,18 +432,18 @@ function prepareQuery(sortRule, search, closed){
 
     if (!closed && (sortRule === "most_votes_today" || sortRule === "most_votes_7_days")) {
         userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
-        +" and DATETIME(uv.date, 'unixepoch') >= datetime('now', ?)"
+            + " and DATETIME(uv.date, 'unixepoch') >= datetime('now', ?)"
     }
 
     const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
 
     let where = " where pinned = 0"
 
-    if(search !== undefined) {
+    if (search !== undefined) {
         where = where + " and name like '%' || ? || '%'"
     }
 
-    if(closed) {
+    if (closed) {
         where = where + " and DATETIME(v.end, 'unixepoch') < datetime('now')"
     }
 
@@ -497,12 +503,18 @@ app.post("/api/vault/vote/:id", (req, res, next) => {
     var params = [userAddress]
     db.get(sql, params, (err, row) => {
         if (err) {
-            res.status(500).json("Error voting.")
+            res.status(500).json({
+                "message": "error",
+                "data": "Error voting."
+            })
         } else {
             if (row) {
                 validateVoteVault(res, req.params.id, voteOption, row.id);
             } else {
-                res.status(500).json("Error voting.")
+                res.status(500).json({
+                    "message": "error",
+                    "data": "Error voting."
+                })
             }
         }
     });
