@@ -65,12 +65,14 @@ function getIcons() {
 
                     axios.get(url).then(response => {
                         const image = response.data.image.large;
-                        const downloadPath = "icons/" + data.reward_contract + ".png";
+                        const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
+
                         download(image, downloadPath, () => {
+                            savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
                         });
-                        savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+
                     }).catch(error => {
-                        const downloadPath = "../icons/noimagetoken.png";
+                        const downloadPath = __dirname + "/icons/noimagetoken.png";
                         savedProcessedNonLp(data.reward_contract, downloadPath)
                     });
                 }

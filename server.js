@@ -426,7 +426,7 @@ function prepareQuery(sortRule, search, closed) {
         "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
     }
 
-    const selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value FROM vaults as v"
+    const selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value, apr FROM vaults as v"
 
     var userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
 
@@ -436,6 +436,7 @@ function prepareQuery(sortRule, search, closed) {
     }
 
     const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
+    const vaultAPRJoin = " LEFT JOIN vaults_apr as vpr ON v.vid = vpr.vid"
 
     let where = " where pinned = 0"
 
@@ -451,7 +452,10 @@ function prepareQuery(sortRule, search, closed) {
 
     let sortBy = querySort[sortRule]
 
-    return selector + userVoteJoin + vaultRewardsJoin + where + groupBy + sortBy;
+    console.log(selector + userVoteJoin + vaultRewardsJoin + vaultAPRJoin + where + groupBy + sortBy);
+
+
+    return selector + userVoteJoin + vaultRewardsJoin + vaultAPRJoin + where + groupBy + sortBy;
 
 }
 

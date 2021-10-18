@@ -372,14 +372,14 @@ function calcAPR() {
                                 })
                                 .catch(error => {
                                     console.log(error.message);
-                                    console.log('error getting token price from lp '+ data.contract);
-                                    console.log('token0 '+ token0);
+                                    console.log('error getting token price from lp ' + data.contract);
+                                    console.log('token0 ' + token0);
                                 });
                         })
                         .catch(error => {
                             console.log(error.message);
-                            console.log('error getting token price from lp '+ data.contract);
-                            console.log('token1 '+ token1);
+                            console.log('error getting token price from lp ' + data.contract);
+                            console.log('token1 ' + token1);
                         });
 
 
@@ -409,33 +409,34 @@ function calcAPR() {
         }
     });
 
-}
 
-function insertAPR(vid, total) {
+    function insertAPR(vid, total) {
 
-    var sql = `select *
-               from vaults_apr
-               where vid = ?`
-
-    console.log(total);
-
-    var params = [moment().unix(), total, vid]
-
-    db.get(sql, [vid], function (err, result) {
-        let sql = `UPDATE vaults_apr
-                   set date = ?,
-                       apr  = ?
+        var sql = `select *
+                   from vaults_apr
                    where vid = ?`
 
-        if (!result) {
-            sql = `INSERT INTO vaults_apr (date, apr, vid)
-                   VALUES (?, ?, ?)`
-        }
+        console.log(total);
 
-        db.run(sql, params, function (err, result) {});
+        var params = [moment().unix(), total, vid]
 
-    });
+        db.get(sql, [vid], function (err, result) {
+            let sql = `UPDATE vaults_apr
+                       set date = ?,
+                           apr  = ?
+                       where vid = ?`
+
+            if (!result) {
+                sql = `INSERT INTO vaults_apr (date, apr, vid)
+                       VALUES (?, ?, ?)`
+            }
+
+            db.run(sql, params, function (err, result) {
+            });
+
+        });
+    }
 }
 
-calcAPR();
+calcAPR()
 
