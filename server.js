@@ -452,10 +452,13 @@ function prepareQuery(sortRule, search, closed) {
 
     let sortBy = querySort[sortRule]
 
-    console.log(selector + userVoteJoin + vaultRewardsJoin + vaultAPRJoin + where + groupBy + sortBy);
-
-
-    return selector + userVoteJoin + vaultRewardsJoin + vaultAPRJoin + where + groupBy + sortBy;
+    return selector +
+        userVoteJoin +
+        vaultRewardsJoin +
+        vaultAPRJoin +
+        where +
+        groupBy +
+        sortBy;
 
 }
 

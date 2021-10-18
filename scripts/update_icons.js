@@ -46,14 +46,16 @@ function getIcons() {
 
                     await axios.get(urlToken0).then(response => {
                         const image = response.data.image.large;
-                        download(image, downloadImg1, () => {});
+                        download(image, downloadImg1, () => {
+                        });
                     }).catch(error => {
                         downloadImg1 = "noimagetoken.png";
                     });
 
                     await axios.get(urlToken1).then(response => {
                         const image = response.data.image.large;
-                        download(image, downloadImg2, () => {});
+                        download(image, downloadImg2, () => {
+                        });
                     }).catch(error => {
                         downloadImg2 = "noimagetoken.png";
                     });
@@ -61,20 +63,44 @@ function getIcons() {
                     savedProcessedLp(data.reward_contract, token0 + ".png", token1 + ".png");
 
                 } else {
-                    let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.reward_contract
 
-                    axios.get(url).then(response => {
-                        const image = response.data.image.large;
-                        const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
-
-                        download(image, downloadPath, () => {
-                            savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+                    if (data.stake_contract === data.reward_contract) {
+                        let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.reward_contract
+                        axios.get(url).then(response => {
+                            const image = response.data.image.large;
+                            const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
+                            download(image, downloadPath, () => {
+                                savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+                            });
+                        }).catch(error => {
+                            const downloadPath = __dirname + "/icons/noimagetoken.png";
+                            savedProcessedNonLp(data.reward_contract, downloadPath)
                         });
+                    } else {
+                        let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.reward_contract
+                        axios.get(url).then(response => {
+                            const image = response.data.image.large;
+                            const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
+                            download(image, downloadPath, () => {
+                                savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+                                let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.stake_contract
+                                axios.get(url).then(response => {
+                                    const image = response.data.image.large;
+                                    const downloadPath = __dirname + "/icons/" + data.stake_contract + ".png";
+                                    download(image, downloadPath, () => {
+                                        savedProcessedNonLp(data.stake_contract, data.stake_contract + ".png")
+                                    });
+                                }).catch(error => {
+                                    const downloadPath = __dirname + "/icons/noimagetoken.png";
+                                    savedProcessedNonLp(data.stake_contract, downloadPath)
+                                });
 
-                    }).catch(error => {
-                        const downloadPath = __dirname + "/icons/noimagetoken.png";
-                        savedProcessedNonLp(data.reward_contract, downloadPath)
-                    });
+                            });
+                        }).catch(error => {
+                            const downloadPath = __dirname + "/icons/noimagetoken.png";
+                            savedProcessedNonLp(data.reward_contract, downloadPath)
+                        });
+                    }
                 }
             }
         }
@@ -93,8 +119,8 @@ var download = function (uri, filename, callback) {
 
 function savedProcessedLp(contract, imgMain, imgSecond) {
     var sql = `INSERT INTO token_icons (contract,
-                                      img_main,
-                                      img_second)
+                                        img_main,
+                                        img_second)
                VALUES (?, ?, ?)`
 
     var params = [
@@ -110,7 +136,7 @@ function savedProcessedLp(contract, imgMain, imgSecond) {
 
 function savedProcessedNonLp(contract, name) {
     var sql = `INSERT INTO token_icons (contract,
-                                      img_main)
+                                        img_main)
                VALUES (?, ?)`
 
     var params = [
@@ -139,7 +165,7 @@ function updateTokenImgIdForContract(contract) {
                    set token_icon_id = ?
                    where reward_contract = ?`
 
-        if(result) {
+        if (result) {
             var params = [
                 result.id,
                 contract,
