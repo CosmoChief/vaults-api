@@ -53,7 +53,16 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "vid"  TEXT    NOT NULL,
                     "date" NUMERIC NOT NULL,
                     "usd_rewards_value"  TEXT    NOT NULL
-                )`)*/
+                )`)
+
+        db.run(`CREATE TABLE "vaults_apr"
+                (
+                    "id"   INTEGER PRIMARY KEY,
+                    "vid"  TEXT    NOT NULL,
+                    "date" NUMERIC NOT NULL,
+                    "apr" TEXT NOT NULL
+                )`)                */
+
 
 
     }
