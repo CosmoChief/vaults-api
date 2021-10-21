@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 app.use(cors());
 app.use(bodyParser.json());
 
-var HTTP_PORT = 8031
+var HTTP_PORT = 8030
 
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
@@ -47,15 +47,19 @@ var createUser = function (callback) {
 
 async function getContractNames(stake, reward) {
     let name
-    if (stake === reward) {
-        const contractStake = new ethers.Contract(stake, minABI, provider);
-        name = await contractStake.symbol();
-    } else {
-        const contractStake = new ethers.Contract(stake, abi, provider);
-        const contractReward = new ethers.Contract(reward, abi, provider);
-        let nameStake = await contractStake.symbol();
-        let nameReward = await contractReward.symbol();
-        name = nameStake + " / " + nameReward;
+    try {
+        if (stake === reward) {
+            const contractStake = new ethers.Contract(stake, minABI, provider);
+            name = sanitizer.sanitize(await contractStake.symbol());
+        } else {
+            const contractStake = new ethers.Contract(stake, abi, provider);
+            const contractReward = new ethers.Contract(reward, abi, provider);
+            let nameStake = sanitizer.sanitize(await contractStake.symbol());
+            let nameReward = sanitizer.sanitize(await contractReward.symbol());
+            name = nameStake + " / " + nameReward;
+        }
+    } catch (e) {
+        name = 'NOTF'
     }
 
     return name;
@@ -63,12 +67,11 @@ async function getContractNames(stake, reward) {
 
 async function addVault(res, data) {
     var sql = `INSERT INTO vaults
-               (vid, name, is_lp, stake_contract, reward_contract, start, [ end], reward_amount)
+               (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
     let end = moment().add(data.days, 'days').unix();
-    console.log(end);
     data.name = await getContractNames(data.stake_contract, data.reward_contract);
 
     var params = [
@@ -79,13 +82,15 @@ async function addVault(res, data) {
         data.reward_contract,
         start,
         end,
-        data.reward,
+        data.reward
     ]
 
     db.run(sql, params, function (err, result) {
         if (err) {
-            console.log(err.message)
-            //res.status(500).json("error creating vault")
+            res.json({
+                "message": "error",
+                "data": "Couldn't create Vault"
+            });
             return;
         }
 
@@ -279,7 +284,9 @@ app.post("/api/vault", (req, res, next) => {
         reward: sanitizer.sanitize(req.body.reward_amount),
     }
 
+
     let errors = validateVaultPost(data);
+
 
     if (typeof errors !== 'undefined' && errors.length > 0) {
         res.status(500).json({
@@ -359,18 +366,26 @@ app.post("/api/vaults", (req, res, next) => {
     let sortRule = sanitizer.sanitize(req.body.sort);
     let search = sanitizer.sanitize(req.body.search);
     let closed = sanitizer.sanitize(req.body.closed);
+    let isLp = sanitizer.sanitize(req.body.isLp);
     let queryParam = [];
 
-    if (closed === undefined) {
+
+    if (isLp === undefined || isLp === false) {
+        isLp = 'false'
+    }
+
+    if (closed === undefined || closed === 'false') {
         closed = false
     }
 
-    if (sortRule === undefined) {
+    if (sortRule === undefined || sortRule === '') {
         sortRule = 'new_to_old'
     }
 
     if (search !== undefined) {
-        queryParam = [search]
+        if(search.trim().length > 0) {
+            queryParam = [search]
+        }
     }
 
     const rules = [
@@ -389,7 +404,9 @@ app.post("/api/vaults", (req, res, next) => {
         return;
     }
 
-    let sql = prepareQuery(sortRule, search, closed)
+    let sql = prepareQuery(sortRule, search, closed, isLp)
+
+    console.log(sql)
 
     const querySort = {
         "most_votes_today": "1",
@@ -401,7 +418,6 @@ app.post("/api/vaults", (req, res, next) => {
     }
 
     db.all(sql, queryParam, (err, rows) => {
-        console.log(err);
         if (err) {
             res.status(400).json({
                 "error": err.message
@@ -415,7 +431,7 @@ app.post("/api/vaults", (req, res, next) => {
     });
 });
 
-function prepareQuery(sortRule, search, closed) {
+function prepareQuery(sortRule, search, closed, isLp = false) {
 
     const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
@@ -440,8 +456,16 @@ function prepareQuery(sortRule, search, closed) {
 
     let where = " where pinned = 0"
 
+    if (isLp === 'false') {
+       where = where + " and is_lp = 'false'"
+    }else {
+       where = where + " and is_lp = 'true'"
+    }
+
     if (search !== undefined) {
-        where = where + " and name like '%' || ? || '%'"
+        if(search.trim().length > 0) {
+            where = where + " and name like '%' || ? || '%'"
+        }
     }
 
     if (closed) {

@@ -13,7 +13,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         /*db.run(`CREATE TABLE "vaults" (
                 "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
-                "vid"	INTEGER NOT NULL,
+                "vid"	INTEGER UNIQUE NOT NULL,
                 "is_lp"	INTEGER NOT NULL,
                 "token_icon_id" INTEGER DEFAULT 0,
                 "stake_contract" TEXT NOT NULL,
@@ -61,7 +61,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "vid"  TEXT    NOT NULL,
                     "date" NUMERIC NOT NULL,
                     "apr" TEXT NOT NULL
-                )`)                */
+                )`)*/
 
 
 
