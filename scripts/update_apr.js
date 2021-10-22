@@ -317,7 +317,7 @@ function getApr(vid, days, unitPrice, totalPrice){
 
     let dailyRate = totalPrice / days;
     let annualizedYield = dailyRate * 365;
-    let initialPoolAlloc = dailyRate * unitPrice;
+    let initialPoolAlloc = 1;
 
     return annualizedYield / initialPoolAlloc * 100;
 }
