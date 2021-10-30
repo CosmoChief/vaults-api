@@ -67,7 +67,7 @@ async function getContractNames(stake, reward) {
 
 async function addVault(res, data) {
     var sql = `INSERT INTO vaults
-               (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
+               (vid, name, is_lp, stake_contract, reward_contract, start, [ end], reward_amount)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
@@ -259,9 +259,9 @@ app.post("/api/bind", async (req, res, next) => {
             console.error(err.message);
         }
         if (row) {
-            res.status(500).json({
-                "message": "Error",
-                "data": "Already binded."
+            res.status(200).json({
+                "message": "success",
+                "data": "binded."
             });
         } else {
             addUser(
@@ -272,6 +272,82 @@ app.post("/api/bind", async (req, res, next) => {
         }
     });
 });
+
+app.post("/api/vault/stake/:id", async (req, res, next) => {
+
+    let vid = sanitizer.sanitize(req.params.id);
+    let userAddress = sanitizer.sanitize(req.body.address);
+
+    console.log(userAddress);
+
+    var sql = 'select * from users where address = ? '
+    var params = [userAddress]
+    db.get(sql, params, (err, userRow) => {
+        if (err) {
+            res.status(500).json({
+                "message": "error",
+                "data": "Error staking."
+            })
+        } else {
+            if (userRow !== undefined) {
+                getStakedVaults(vid, userRow.id, function (err, row) {
+                    console.log(row);
+                    console.log(err);
+                    if (err) {
+                        console.error(err.message);
+                    }
+                    if (row) {
+                        res.status(200).json({
+                            "message": "success",
+                            "data": "staked."
+                        });
+                    } else {
+                        addUserToStake(
+                            vid,
+                            userRow.id,
+                            res
+                        )
+                    }
+                });
+            } else {
+                res.status(200).json({
+                    "message": "error",
+                    "data": "error staking."
+                });
+            }
+        }
+    });
+});
+
+var getStakedVaults = function (vid, uid, callback) {
+    var sql = "select * from vault_users where vid = ? and uid = ?"
+    var params = [vid, uid]
+    db.get(sql, params, (err, row) => {
+        callback(err, row);
+    });
+};
+
+function addUserToStake(vid, uid, res) {
+    var sql = 'INSERT INTO vault_users (vid, uid) VALUES (?,?)'
+    var params = [
+        sanitizer.sanitize(vid),
+        sanitizer.sanitize(uid),
+    ]
+    db.run(sql, params, function (err, result) {
+        if (err) {
+            res.status(500).json({
+                "error staking user": err.message
+            })
+            return;
+        }
+
+        res.json({
+            "message": "success",
+            "data": "staked."
+        });
+    });
+}
+
 
 app.post("/api/vault", (req, res, next) => {
 
@@ -365,6 +441,8 @@ app.post("/api/vaults", (req, res, next) => {
 
     let sortRule = sanitizer.sanitize(req.body.sort);
     let search = sanitizer.sanitize(req.body.search);
+    let staked = sanitizer.sanitize(req.body.staked);
+    let address = sanitizer.sanitize(req.body.address);
     let closed = sanitizer.sanitize(req.body.closed);
     let isLp = sanitizer.sanitize(req.body.isLp);
     let queryParam = [];
@@ -383,7 +461,7 @@ app.post("/api/vaults", (req, res, next) => {
     }
 
     if (search !== undefined) {
-        if(search.trim().length > 0) {
+        if (search.trim().length > 0) {
             queryParam = [search]
         }
     }
@@ -404,9 +482,7 @@ app.post("/api/vaults", (req, res, next) => {
         return;
     }
 
-    let sql = prepareQuery(sortRule, search, closed, isLp)
-
-    console.log(sql)
+    let sql = prepareQuery(sortRule, search, closed, isLp, staked)
 
     const querySort = {
         "most_votes_today": "1",
@@ -415,6 +491,11 @@ app.post("/api/vaults", (req, res, next) => {
 
     if (sortRule === "most_votes_today" || sortRule === "most_votes_7_days") {
         queryParam.unshift("-" + querySort[sortRule] + " days");
+    }
+
+
+    if (staked) {
+        queryParam.push(address)
     }
 
     db.all(sql, queryParam, (err, rows) => {
@@ -431,7 +512,7 @@ app.post("/api/vaults", (req, res, next) => {
     });
 });
 
-function prepareQuery(sortRule, search, closed, isLp = false) {
+function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
 
     const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
@@ -442,7 +523,12 @@ function prepareQuery(sortRule, search, closed, isLp = false) {
         "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
     }
 
-    const selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value, apr FROM vaults as v"
+    let selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value, apr FROM vaults as v"
+
+    if (staked === 'true') {
+        selector = selector + " JOIN vault_users as uvs on uvs.vid = v.vid " +
+            "JOIN users as u on u.id = uvs.uid"
+    }
 
     var userVoteJoin = " LEFT JOIN users_votes as uv ON v.vid = uv.vid"
 
@@ -452,24 +538,27 @@ function prepareQuery(sortRule, search, closed, isLp = false) {
     }
 
     const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
-    const vaultAPRJoin = " LEFT JOIN vaults_apr as vpr ON v.vid = vpr.vid"
+    let vaultAPRJoin = " LEFT JOIN vaults_apr as vpr ON v.vid = vpr.vid"
+
 
     let where = " where pinned = 0"
 
     if (isLp === 'false') {
-       where = where + " and is_lp = 'false'"
-    }else {
-       where = where + " and is_lp = 'true'"
+        where = where + " and is_lp = 'false'"
+    } else {
+        where = where + " and is_lp = 'true'"
     }
 
-    if (search !== undefined) {
-        if(search.trim().length > 0) {
-            where = where + " and name like '%' || ? || '%'"
-        }
+    if (typeof search !== 'undefined' && search) {
+        where = where + " and name like '%' || ? || '%'"
     }
 
     if (closed) {
         where = where + " and DATETIME(v.end, 'unixepoch') < datetime('now')"
+    }
+
+    if (staked) {
+        where = where + " and u.address = ?"
     }
 
     const groupBy = " GROUP BY v.vid "

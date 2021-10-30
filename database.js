@@ -39,6 +39,13 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "vid"  TEXT    NOT NULL
                 )`)
 
+        db.run(`CREATE TABLE "vault_users"
+                (
+                    "id"   INTEGER PRIMARY KEY,
+                    "uid"  TEXT    NOT NULL,
+                    "vid"  TEXT    NOT NULL
+                )`)
+
         db.run(`CREATE TABLE "token_icons"
                 (
                     "id"   INTEGER PRIMARY KEY,
