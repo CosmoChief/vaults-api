@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 app.use(cors());
 app.use(bodyParser.json());
 
-var HTTP_PORT = 8030
+var HTTP_PORT = 8031
 
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%", HTTP_PORT))
@@ -67,7 +67,7 @@ async function getContractNames(stake, reward) {
 
 async function addVault(res, data) {
     var sql = `INSERT INTO vaults
-               (vid, name, is_lp, stake_contract, reward_contract, start, [ end], reward_amount)
+               (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
@@ -473,6 +473,7 @@ app.post("/api/vaults", (req, res, next) => {
         'most_votes_today',
         'most_votes_7_days',
         'rewards',
+        'sort_apr',
     ];
 
     if (!rules.includes(sortRule)) {
@@ -516,6 +517,7 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
 
     const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
+        "sort_apr": "ORDER BY ID DESC;",
         "end_date": "ORDER BY [end] DESC;",
         "most_votes": "ORDER BY votes DESC;",
         "most_votes_today": "ORDER BY votes DESC;",
