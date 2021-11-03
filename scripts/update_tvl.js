@@ -55,6 +55,42 @@ function calcTvl() {
     db.all(sql, params, async (err, row) => {
         if (row) {
             for (const data of row) {
+
+                //remove
+                switch (data.reward_contract) {
+                    case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+                        data.reward_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        break;
+                    case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+                        data.reward_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        break;
+                    case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+                        data.reward_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        break;
+                    case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+                        data.reward_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        break;
+
+                }
+
+                switch (data.stake_contract) {
+                    case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+                        data.stake_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        break;
+                    case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+                        data.stake_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        break;
+                    case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+                        data.stake_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        break;
+                    case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+                        data.stake_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        break;
+
+                }
+                //remove
+
+
                 if (data.is_lp === 'true') {
                     const contract = new ethers.Contract(data.reward_contract, abi, provider);
 

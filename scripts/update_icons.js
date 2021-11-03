@@ -22,6 +22,41 @@ function getIcons() {
             let processedContracts = [];
             for (const data of row) {
 
+
+                // remove
+                switch (data.reward_contract) {
+                    case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+                        data.reward_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        break;
+                    case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+                        data.reward_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        break;
+                    case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+                        data.reward_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        break;
+                    case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+                        data.reward_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        break;
+
+                }
+
+                switch (data.stake_contract) {
+                    case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+                        data.stake_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        break;
+                    case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+                        data.stake_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        break;
+                    case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+                        data.stake_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        break;
+                    case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+                        data.stake_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        break;
+
+                }
+                //remove
+
                 if (processedContracts.includes(data.reward_contract)) {
                     if (data.tokenImgId === 0) {
                         updateTokenImgIdForContract(data.contract);
@@ -117,35 +152,96 @@ var download = function (uri, filename, callback) {
     });
 };
 
-function savedProcessedLp(contract, imgMain, imgSecond) {
-    var sql = `INSERT INTO token_icons (contract,
-                                        img_main,
-                                        img_second)
-               VALUES (?, ?, ?)`
+function savedProcessedLp(contract, name) {
+
+    // remove
+    switch (contract) {
+        case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
+            contract= '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
+            break;
+        case '0xc748673057861a797275cd8a068abb95a902e8de': //babydoge
+            contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
+            break;
+        case '0x55d398326f99059ff775485246999027b3197955': //usdt
+            contract = '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068';
+            break;
+        case '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0': //fakelp
+            contract = '0x563d18D44660d459366785715B8cF6BbA7813474';
+            break;
+
+    }
+    //remove
+
+    var sql = `select id
+               from token_icons
+               where contract = ?`
 
     var params = [
         contract,
-        imgMain,
-        imgSecond,
     ]
 
-    db.run(sql, params, function (err, result) {
-        updateTokenImgIdForContract(contract)
+    db.get(sql, params, function (err, result) {
+        if (!result) {
+            var sql = `INSERT INTO token_icons (contract,
+                                                img_main,
+                                                img_second)
+                       VALUES (?, ?, ?)`
+
+            var params = [
+                contract,
+                imgMain,
+                imgSecond,
+            ]
+
+            db.run(sql, params, function (err, result) {
+                updateTokenImgIdForContract(contract)
+            });
+        }
     });
 }
 
 function savedProcessedNonLp(contract, name) {
-    var sql = `INSERT INTO token_icons (contract,
-                                        img_main)
-               VALUES (?, ?)`
+
+    // remove
+    switch (contract) {
+        case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
+            contract= '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
+            break;
+        case '0xc748673057861a797275cd8a068abb95a902e8de': //babydoge
+            contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
+            break;
+        case '0x55d398326f99059ff775485246999027b3197955': //usdt
+            contract = '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068';
+            break;
+        case '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0': //fakelp
+            contract = '0x563d18D44660d459366785715B8cF6BbA7813474';
+            break;
+
+    }
+    //remove
+
+    var sql = `select id
+               from token_icons
+               where contract = ?`
 
     var params = [
         contract,
-        name
     ]
 
-    db.run(sql, params, function (err, result) {
-        updateTokenImgIdForContract(contract)
+    db.get(sql, params, function (err, result) {
+        if (result === undefined) {
+            var sql = `INSERT INTO token_icons (contract, img_main)
+                       VALUES (?, ?)`
+
+            var params = [
+                contract,
+                name
+            ]
+
+            db.run(sql, params, function (err, result) {
+                updateTokenImgIdForContract(contract)
+            });
+        }
     });
 }
 
