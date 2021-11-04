@@ -38,7 +38,7 @@ app.listen(HTTP_PORT, () => {
 
 var createUser = function (callback) {
     var sql = "select * from users where address = ?"
-    var params = [userAddress]
+    var params = [userAddress.toLowerCase()]
     var data = null;
     db.get(sql, params, (err, row) => {
         callback(err, row);
@@ -268,7 +268,7 @@ app.post("/api/bind", async (req, res, next) => {
             addUser(
                 res,
                 crypto.randomBytes(13).toString('hex'),
-                userAddress
+                userAddress.toLowerCase()
             )
         }
     });
@@ -282,7 +282,7 @@ app.post("/api/vault/stake/:id", async (req, res, next) => {
     console.log(userAddress);
 
     var sql = 'select * from users where address = ? '
-    var params = [userAddress]
+    var params = [userAddress.toLowerCase()]
     db.get(sql, params, (err, userRow) => {
         if (err) {
             res.status(500).json({
@@ -413,12 +413,15 @@ app.get("/api/tvl", (req, res, next) => {
 app.get("/api/vaults/pinned", (req, res, next) => {
     var sql = `SELECT v.*,
                       COUNT(uv.id) AS votes,
-                      vrv.usd_rewards_value
+                      vrv.usd_rewards_value,
+                      vpr.apr
                FROM vaults as v
                         LEFT JOIN users_votes as uv
                                   ON v.vid = uv.vid
                         LEFT JOIN vaults_rewards_value as vrv
                                   ON v.vid = vrv.vid
+                        LEFT JOIN vaults_apr as vpr 
+                            ON v.vid = vpr.vid
                WHERE v.pinned = 1
                GROUP BY v.id
                order by v.id desc`
@@ -624,7 +627,7 @@ app.post("/api/vault/vote/:id", (req, res, next) => {
     const voteOption = 1;
 
     var sql = 'select * from users where address = ? '
-    var params = [userAddress]
+    var params = [userAddress.toLowerCase()]
     db.get(sql, params, (err, row) => {
         if (err) {
             res.status(500).json({
