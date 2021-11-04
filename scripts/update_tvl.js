@@ -344,18 +344,19 @@ function calcTvl() {
 
                 }
 
+                let priceTokenStake = false;
                 switch (data.stake_contract) {
                     case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
-                        priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        priceTokenStake = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
                         break;
                     case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
-                        priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        priceTokenStake = '0xc748673057861a797275cd8a068abb95a902e8de';
                         break;
                     case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
-                        priceToken = '0x55d398326f99059ff775485246999027b3197955';
+                        priceTokenStake = '0x55d398326f99059ff775485246999027b3197955';
                         break;
                     case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
-                        priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        priceTokenStake = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
                         break;
 
                 }
@@ -395,8 +396,6 @@ function calcTvl() {
                                     let rewards = ethers.utils.formatUnits(data.reward_amount, getUnit(decimals));
                                     let total = (rewards * price).toString();
 
-                                    console.log(total);
-
                                     insertTvl(data.stake_contract, data.vid, total);
                                 })
                                 .catch(error => {
@@ -420,13 +419,19 @@ function calcTvl() {
                     }
                     //remove
 
+
                     axios.get(url)
                         .then(response => {
                             const contract = new ethers.Contract(data.reward_contract, minimalAbiToken, provider);
                             let price = response['data'].data.price;
-
                             let rewards = ethers.utils.formatUnits(data.reward_amount, getUnit(contract.decimals()));
-                            let total = rewards * price;
+                            let total = parseFloat(rewards) * parseFloat(price);
+
+                            console.log(url);
+                            console.log(rewards);
+                            console.log(price);
+                            console.log('------');
+
                             insertTvl(data.stake_contract, data.vid, total);
 
                         })
@@ -448,23 +453,6 @@ async function insertTvl(stakeContract, vid, total) {
 
     const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
     const token = new ethers.Contract(stakeContract, minimalAbiToken, provider);
-
-    /*
-    *
-  curl 'http://0.0.0.0:8031/api/vault' \
-  -H 'Connection: keep-alive' \
-  -H 'Pragma: no-cache' \
-  -H 'Cache-Control: no-cache' \
-  -H 'Accept: application/json' \
-  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36' \
-  -H 'Content-Type: application/json' \
-  -H 'Origin: http://localhost:8080' \
-  -H 'Referer: http://localhost:8080/' \
-  -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8,pt;q=0.7' \
-  --data-raw '{"stake_contract":"0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46","reward_contract":"0xfF6AB02b94a830a9f8d2272001c2adA7C8035068","reward_amount":"80000000000000000000000","days":"50","min_lock_days":"","is_lp":"false","vid":"4"}' \
-  --compressed \
-  --insecure
-    * */
 
 
     // remove
@@ -508,7 +496,6 @@ async function insertTvl(stakeContract, vid, total) {
 
             total = total + stakedTotal;
 
-            console.log(total)
 
             var params = [moment().unix(), total.toString(), vid]
 
