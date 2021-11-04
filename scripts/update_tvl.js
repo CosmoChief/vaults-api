@@ -3,6 +3,275 @@ var db = require("../database.js")
 const axios = require('axios');
 var moment = require("moment");
 var abi = '[{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"}],"name":"Mint","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0In","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1In","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount0Out","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1Out","type":"uint256"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"Swap","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint112","name":"reserve0","type":"uint112"},{"indexed":false,"internalType":"uint112","name":"reserve1","type":"uint112"}],"name":"Sync","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"constant":true,"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"MINIMUM_LIQUIDITY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"PERMIT_TYPEHASH","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"burn","outputs":[{"internalType":"uint256","name":"amount0","type":"uint256"},{"internalType":"uint256","name":"amount1","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"factory","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getReserves","outputs":[{"internalType":"uint112","name":"_reserve0","type":"uint112"},{"internalType":"uint112","name":"_reserve1","type":"uint112"},{"internalType":"uint32","name":"_blockTimestampLast","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_token0","type":"address"},{"internalType":"address","name":"_token1","type":"address"}],"name":"initialize","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"kLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"mint","outputs":[{"internalType":"uint256","name":"liquidity","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"nonces","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"permit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"price0CumulativeLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"price1CumulativeLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"skim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount0Out","type":"uint256"},{"internalType":"uint256","name":"amount1Out","type":"uint256"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"swap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"sync","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"token1","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]'
+var vaultAbi = [{"inputs": [], "stateMutability": "nonpayable", "type": "constructor"}, {
+    "anonymous": false,
+    "inputs": [{"indexed": true, "internalType": "address", "name": "user", "type": "address"}, {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "pid",
+        "type": "uint256"
+    }, {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "Deposit",
+    "type": "event"
+}, {
+    "anonymous": false,
+    "inputs": [{
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+    }, {"indexed": true, "internalType": "address", "name": "newOwner", "type": "address"}],
+    "name": "OwnershipTransferred",
+    "type": "event"
+}, {
+    "anonymous": false,
+    "inputs": [{"indexed": true, "internalType": "address", "name": "user", "type": "address"}, {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "pid",
+        "type": "uint256"
+    }, {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "Withdraw",
+    "type": "event"
+}, {
+    "inputs": [],
+    "name": "babydoge",
+    "outputs": [{"internalType": "contract IERC20", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}, {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+    }],
+    "name": "calcRewardsUser",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}],
+    "name": "claimRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "key", "type": "uint256"}, {
+        "internalType": "contract IERC20",
+        "name": "_tokenStake",
+        "type": "address"
+    }, {"internalType": "contract IERC20", "name": "_tokenReward", "type": "address"}, {
+        "internalType": "bool",
+        "name": "_isLp",
+        "type": "bool"
+    }, {"internalType": "uint256", "name": "_vaultDays", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "_minLockDays",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "_amount", "type": "uint256"}],
+    "name": "createVault",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "_lockDays",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "value", "type": "uint256"}],
+    "name": "deposit",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}, {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+    }],
+    "name": "getUserInfo",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "key", "type": "uint256"}],
+    "name": "getVaultId",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}],
+    "name": "getVaultInfo",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+    }, {"internalType": "contract IERC20", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}],
+    "name": "getVaultToken",
+    "outputs": [{
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+    }, {"internalType": "contract IERC20", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_taxForNonBabyDogeCoin", "type": "uint256"}],
+    "name": "setTaxForNonBabyDogeCoin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [],
+    "name": "taxForNonBabyDogeCoin",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }],
+    "name": "totalDay",
+    "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "weight",
+        "type": "uint256"
+    }],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "address", "name": "newOwner", "type": "address"}],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+    }],
+    "name": "userInfo",
+    "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "weight",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "rewardTotal", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "rewardWithdraw",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "lockTime", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "lockDays",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "lastRewardDay", "type": "uint256"}, {
+        "internalType": "bool",
+        "name": "exists",
+        "type": "bool"
+    }],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "vaultInfo",
+    "outputs": [{"internalType": "uint256", "name": "amountReward", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "vaultTokenTax",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "startVault", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "vaultDays",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "minLockDays", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "userCount",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "usersAmount", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "usersWeight",
+        "type": "uint256"
+    }, {"internalType": "bool", "name": "isLpVault", "type": "bool"}, {
+        "internalType": "bool",
+        "name": "paused",
+        "type": "bool"
+    }, {"internalType": "uint256", "name": "lastTotalDay", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "vaultKeys",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "vaultToken",
+    "outputs": [{
+        "internalType": "contract IERC20",
+        "name": "tokenStake",
+        "type": "address"
+    }, {"internalType": "contract IERC20", "name": "tokenReward", "type": "address"}, {
+        "internalType": "address",
+        "name": "vaultCreator",
+        "type": "address"
+    }],
+    "stateMutability": "view",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}, {
+    "inputs": [{"internalType": "uint256", "name": "_vid", "type": "uint256"}],
+    "name": "withdrawTax",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+}];
 var minimalAbiToken = [{
     "constant": true,
     "inputs": [{"name": "_owner", "type": "address"}],
@@ -34,7 +303,8 @@ var minimalAbiToken = [{
     "outputs": [{"type": "uint256"}]
 }];
 const ethers = require('ethers');
-const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.binance.org:443');
+const vaultAddress = "0x82B4aF97AC6Ad1055645191618De65c11170A593";
+const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s3.binance.org:8545/');
 
 function getUnit(decimals) {
     switch (decimals) {
@@ -56,39 +326,40 @@ function calcTvl() {
         if (row) {
             for (const data of row) {
 
-                //remove
+                             // remove
+                let priceToken = false;
                 switch (data.reward_contract) {
                     case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
-                        data.reward_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
                         break;
                     case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
-                        data.reward_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
                         break;
                     case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
-                        data.reward_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        priceToken = '0x55d398326f99059ff775485246999027b3197955';
                         break;
                     case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
-                        data.reward_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
                         break;
 
                 }
 
                 switch (data.stake_contract) {
                     case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
-                        data.stake_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
                         break;
                     case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
-                        data.stake_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
                         break;
                     case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
-                        data.stake_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        priceToken = '0x55d398326f99059ff775485246999027b3197955';
                         break;
                     case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
-                        data.stake_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
                         break;
 
                 }
-                //remove
+                // remove
 
 
                 if (data.is_lp === 'true') {
@@ -126,28 +397,38 @@ function calcTvl() {
 
                                     console.log(total);
 
-                                    insertTvl(data.vid, total);
+                                    insertTvl(data.stake_contract, data.vid, total);
                                 })
                                 .catch(error => {
-                                    console.log('error getting token price from lp '+ data.contract);
-                                    console.log('token0 '+ token0);
+                                    console.log('error getting token price from lp ' + data.contract);
+                                    console.log('token0 ' + token0);
                                 });
                         })
                         .catch(error => {
-                            console.log('error getting token price from lp '+ data.contract);
-                            console.log('token1 '+ token1);
+                            console.log('error getting token price from lp ' + data.contract);
+                            console.log('token1 ' + token1);
                         });
 
 
                 } else {
+
                     let url = "https://api.pancakeswap.info/api/v2/tokens/" + data.reward_contract
+
+                    //remove
+                    if (priceToken) {
+                        url = "https://api.pancakeswap.info/api/v2/tokens/" + priceToken
+                    }
+                    //remove
+
                     axios.get(url)
                         .then(response => {
                             const contract = new ethers.Contract(data.reward_contract, minimalAbiToken, provider);
                             let price = response['data'].data.price;
+
                             let rewards = ethers.utils.formatUnits(data.reward_amount, getUnit(contract.decimals()));
                             let total = rewards * price;
-                            insertTvl(data.vid, total);
+                            insertTvl(data.stake_contract, data.vid, total);
+
                         })
                         .catch(error => {
                             console.log(error);
@@ -159,28 +440,99 @@ function calcTvl() {
 
 }
 
-function insertTvl(vid, total) {
+async function insertTvl(stakeContract, vid, total) {
 
     var sql = `select *
                from vaults_rewards_value
                where vid = ?`
 
-    var params = [moment().unix(), total.toString(), vid]
+    const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
+    const token = new ethers.Contract(stakeContract, minimalAbiToken, provider);
 
-    db.get(sql, [vid], function (err, result) {
-        let sql = `UPDATE vaults_rewards_value
-                   set date = ?,
-                       usd_rewards_value  = ?
-                   where vid = ?`
+    /*
+    *
+  curl 'http://0.0.0.0:8031/api/vault' \
+  -H 'Connection: keep-alive' \
+  -H 'Pragma: no-cache' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Accept: application/json' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: http://localhost:8080' \
+  -H 'Referer: http://localhost:8080/' \
+  -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8,pt;q=0.7' \
+  --data-raw '{"stake_contract":"0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46","reward_contract":"0xfF6AB02b94a830a9f8d2272001c2adA7C8035068","reward_amount":"80000000000000000000000","days":"50","min_lock_days":"","is_lp":"false","vid":"4"}' \
+  --compressed \
+  --insecure
+    * */
 
-        if (!result) {
-            sql = `INSERT INTO vaults_rewards_value (date, usd_rewards_value, vid)
-                   VALUES (?, ?, ?)`
-        }
 
-        db.run(sql, params, function (err, result) {});
+    // remove
+    let priceToken = false;
+    switch (stakeContract) {
+        case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+            priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+            break;
+        case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+            priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
+            break;
+        case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+            priceToken = '0x55d398326f99059ff775485246999027b3197955';
+            break;
+        case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+            priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+            break;
 
-    });
+    }
+    // remove
+
+    const vaultInfo = await vault.getVaultInfo(vid);
+    const decimals = token.decimals();
+    let usersAmount = ethers.utils.formatUnits(vaultInfo[7].toString(), getUnit(decimals));
+
+    // remove
+    let url = "https://api.pancakeswap.info/api/v2/tokens/" + stakeContract
+    if (priceToken !== false) {
+        url = "https://api.pancakeswap.info/api/v2/tokens/" + priceToken
+    }
+    // remove
+
+
+    axios.get(url)
+        .then(response => {
+            let priceToken1 = response['data'].data.price;
+            let stakedTotal = 1
+            if (parseInt(usersAmount) > 0) {
+                stakedTotal = priceToken1 * usersAmount
+            }
+
+            total = total + stakedTotal;
+
+            console.log(total)
+
+            var params = [moment().unix(), total.toString(), vid]
+
+            db.get(sql, [vid], function (err, result) {
+                let sql = `UPDATE vaults_rewards_value
+                           set date              = ?,
+                               usd_rewards_value = ?
+                           where vid = ?`
+
+                if (!result) {
+                    sql = `INSERT INTO vaults_rewards_value (date, usd_rewards_value, vid)
+                           VALUES (?, ?, ?)`
+                }
+
+                db.run(sql, params, function (err, result) {
+                });
+
+            });
+
+        })
+        .catch(error => {
+            console.log(error);
+        });
+
 }
 
 function sleep(miliseconds) {

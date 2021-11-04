@@ -52,13 +52,14 @@ async function getContractNames(stake, reward) {
             const contractStake = new ethers.Contract(stake, minABI, provider);
             name = sanitizer.sanitize(await contractStake.symbol());
         } else {
-            const contractStake = new ethers.Contract(stake, abi, provider);
-            const contractReward = new ethers.Contract(reward, abi, provider);
+            const contractStake = new ethers.Contract(stake, minABI, provider);
+            const contractReward = new ethers.Contract(reward, minABI, provider);
             let nameStake = sanitizer.sanitize(await contractStake.symbol());
             let nameReward = sanitizer.sanitize(await contractReward.symbol());
             name = nameStake + " / " + nameReward;
         }
     } catch (e) {
+        console.log(e.message)
         name = 'NOTF'
     }
 

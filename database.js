@@ -9,8 +9,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
       console.error(err.message)
       //throw err
     }else{
-        console.log('Connected to the SQLite database.')/*
-        db.run(`CREATE TABLE "vaults" (
+        console.log('Connected to the SQLite database.')
+        /*db.run(`CREATE TABLE "vaults" (
                 "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
                 "vid"	INTEGER UNIQUE NOT NULL,
@@ -68,8 +68,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     "vid"  TEXT    NOT NULL,
                     "date" NUMERIC NOT NULL,
                     "apr" TEXT NOT NULL
-                )`)
-        */
+                )`)*/
+
 
 
     }

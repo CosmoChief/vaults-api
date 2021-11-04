@@ -105,11 +105,11 @@ function getIcons() {
                             const image = response.data.image.large;
                             const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
                             download(image, downloadPath, () => {
-                                savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+                                savedProcessedNonLp(data.stake_contract, data.reward_contract)
                             });
                         }).catch(error => {
                             const downloadPath = __dirname + "/icons/noimagetoken.png";
-                            savedProcessedNonLp(data.reward_contract, downloadPath)
+                            savedProcessedNonLp(data.stake_contract, data.reward_contract)
                         });
                     } else {
                         let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.reward_contract
@@ -117,23 +117,21 @@ function getIcons() {
                             const image = response.data.image.large;
                             const downloadPath = __dirname + "/icons/" + data.reward_contract + ".png";
                             download(image, downloadPath, () => {
-                                savedProcessedNonLp(data.reward_contract, data.reward_contract + ".png")
+                                savedProcessedNonLp(data.stake_contract, data.reward_contract)
                                 let url = "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/" + data.stake_contract
                                 axios.get(url).then(response => {
                                     const image = response.data.image.large;
                                     const downloadPath = __dirname + "/icons/" + data.stake_contract + ".png";
                                     download(image, downloadPath, () => {
-                                        savedProcessedNonLp(data.stake_contract, data.stake_contract + ".png")
+                                        savedProcessedNonLp(data.stake_contract, data.reward_contract)
                                     });
                                 }).catch(error => {
-                                    const downloadPath = __dirname + "/icons/noimagetoken.png";
-                                    savedProcessedNonLp(data.stake_contract, downloadPath)
+                                    savedProcessedNonLp(data.stake_contract, data.reward_contract)
                                 });
 
                             });
                         }).catch(error => {
-                            const downloadPath = __dirname + "/icons/noimagetoken.png";
-                            savedProcessedNonLp(data.reward_contract, downloadPath)
+                            savedProcessedNonLp(data.stake_contract, data.reward_contract)
                         });
                     }
                 }
@@ -157,7 +155,7 @@ function savedProcessedLp(contract, name) {
     // remove
     switch (contract) {
         case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
-            contract= '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
+            contract = '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
             break;
         case '0xc748673057861a797275cd8a068abb95a902e8de': //babydoge
             contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
@@ -200,51 +198,127 @@ function savedProcessedLp(contract, name) {
     });
 }
 
-function savedProcessedNonLp(contract, name) {
+function savedProcessedNonLp(stake_contract, reward_contract) {
 
     // remove
-    switch (contract) {
+    switch (stake_contract) {
         case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
-            contract= '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
+            stake_contract = '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
             break;
         case '0xc748673057861a797275cd8a068abb95a902e8de': //babydoge
-            contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
+            stake_contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
             break;
         case '0x55d398326f99059ff775485246999027b3197955': //usdt
-            contract = '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068';
+            stake_contract = '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068';
             break;
         case '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0': //fakelp
-            contract = '0x563d18D44660d459366785715B8cF6BbA7813474';
+            stake_contract = '0x563d18D44660d459366785715B8cF6BbA7813474';
+            break;
+
+    }
+
+    switch (reward_contract) {
+        case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
+            reward_contract = '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9';
+            break;
+        case '0xc748673057861a797275cd8a068abb95a902e8de': //babydoge
+            reward_contract = '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46';
+            break;
+        case '0x55d398326f99059ff775485246999027b3197955': //usdt
+            reward_contract = '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068';
+            break;
+        case '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0': //fakelp
+            reward_contract = '0x563d18D44660d459366785715B8cF6BbA7813474';
             break;
 
     }
     //remove
+    let params = [];
+    let sql = null;
 
-    var sql = `select id
+    if (stake_contract === reward_contract) {
+        sql = `select id
                from token_icons
                where contract = ?`
 
-    var params = [
-        contract,
+        params = [
+            contract,
+        ]
+
+        db.get(sql, params, function (err, result) {
+            if (result === undefined) {
+                var sql = `INSERT INTO token_icons (contract, img_main)
+                           VALUES (?, ?)`
+
+                var params = [
+                    contract,
+                    name
+                ]
+
+                db.run(sql, params, function (err, result) {
+                    updateTokenImgIdForContract(contract)
+                });
+            }
+        });
+    } else {
+        sql = `select id
+               from token_icons
+               where img_main = ?
+                 and img_second = ?`
+
+        params = [
+            reward_contract + ".png",
+            stake_contract + ".png",
+        ]
+
+        db.get(sql, params, function (err, result) {
+            if (result === undefined) {
+                var sql = `INSERT INTO token_icons (contract, img_main, img_second)
+                           VALUES (?, ?, ?)`
+
+                params = [
+                    stake_contract,
+                    reward_contract + ".png",
+                    stake_contract + ".png",
+                ]
+
+                db.run(sql, params, function (err, result) {
+                    updateTokenImgIdForContractWithDifferentRewards(stake_contract, reward_contract)
+                });
+            }
+        });
+    }
+}
+
+function updateTokenImgIdForContractWithDifferentRewards(stake_contract, reward_contract) {
+    let sql = `select id
+               from token_icons
+               where img_main = ?
+                 and img_second = ?`
+
+     let params = [
+        reward_contract + ".png",
+        stake_contract + ".png",
     ]
 
     db.get(sql, params, function (err, result) {
-        if (result === undefined) {
-            var sql = `INSERT INTO token_icons (contract, img_main)
-                       VALUES (?, ?)`
 
+        var sql = `update vaults
+                   set token_icon_id = ?
+                   where reward_contract = ? and stake_contract = ?`
+
+        if (result) {
             var params = [
-                contract,
-                name
+                result.id,
+                reward_contract,
+                stake_contract,
             ]
 
             db.run(sql, params, function (err, result) {
-                updateTokenImgIdForContract(contract)
             });
         }
     });
 }
-
 function updateTokenImgIdForContract(contract) {
     var sql = `select id
                from token_icons

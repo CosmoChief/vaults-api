@@ -122,7 +122,15 @@ var vaultAbi = [{"inputs": [], "stateMutability": "nonpayable", "type": "constru
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-    }],
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+    }, {"internalType": "uint256", "name": "", "type": "uint256"}, {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+    }, {"internalType": "contract IERC20", "name": "", "type": "address"}],
     "stateMutability": "view",
     "type": "function"
 }, {
@@ -295,7 +303,8 @@ var minimalAbiToken = [{
     "outputs": [{"type": "uint256"}]
 }];
 const ethers = require('ethers');
-const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed1.binance.org:443');
+const vaultAddress = "0x82B4aF97AC6Ad1055645191618De65c11170A593";
+const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s3.binance.org:8545/');
 
 function getUnit(decimals) {
     switch (decimals) {
@@ -310,16 +319,84 @@ function getUnit(decimals) {
     }
 }
 
-function getApr(vid, days, unitPrice, totalPrice) {
+async function getApr(stakeContract, vid, days, unitPrice, totalPrice) {
     let hasDeposits = false;
 
-    //ready vault contract get and convert user allocation
+    const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
+    const token = new ethers.Contract(stakeContract, minimalAbiToken, provider);
 
-    let dailyRate = totalPrice / days;
-    let annualizedYield = dailyRate * 365;
-    let initialPoolAlloc = 1;
+    // remove
+    let priceToken = false;
+    switch (stakeContract) {
+        case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
+            priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+            break;
+        case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
+            priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
+            break;
+        case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
+            priceToken = '0x55d398326f99059ff775485246999027b3197955';
+            break;
+        case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
+            priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+            break;
 
-    return annualizedYield / initialPoolAlloc * 100;
+    }
+    // remove
+
+    const vaultInfo = await vault.getVaultInfo(vid);
+    const decimals = token.decimals();
+    let usersAmount = ethers.utils.formatUnits(vaultInfo[7].toString(), getUnit(decimals));
+
+    // remove
+    let url = "https://api.pancakeswap.info/api/v2/tokens/" + stakeContract
+    if (priceToken !== false) {
+        url = "https://api.pancakeswap.info/api/v2/tokens/" + priceToken
+    }
+    // remove
+
+    axios.get(url)
+        .then(response => {
+            let priceToken1 = response['data'].data.price;
+            let stakedTotal = 1
+            if (parseInt(usersAmount) > 0) {
+                stakedTotal = priceToken1 * usersAmount
+            }
+
+            const dailyRate = totalPrice / days;
+            const annualizedYield = dailyRate * 365;
+            const apr = annualizedYield / stakedTotal * 100;
+
+            insertAPR(vid, apr)
+        })
+        .catch(error => {
+            console.log(error);
+        });
+}
+
+function insertAPR(vid, total) {
+
+    var sql = `select *
+               from vaults_apr
+               where vid = ?`
+
+    var params = [moment().unix(), total, vid]
+
+    db.get(sql, [vid], function (err, result) {
+        let sql = `UPDATE vaults_apr
+                   set date = ?,
+                       apr  = ?
+                   where vid = ?`
+
+        if (!result) {
+            sql = `INSERT INTO vaults_apr (date, apr, vid)
+                   VALUES (?, ?, ?)`
+        }
+
+        db.run(sql, params, function (err, result) {
+        });
+
+    });
 }
 
 function calcAPR() {
@@ -330,34 +407,35 @@ function calcAPR() {
             for (const data of row) {
 
                 // remove
+                let priceToken = false;
                 switch (data.reward_contract) {
                     case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
-                        data.reward_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
                         break;
                     case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
-                        data.reward_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
                         break;
                     case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
-                        data.reward_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        priceToken = '0x55d398326f99059ff775485246999027b3197955';
                         break;
                     case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
-                        data.reward_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
                         break;
 
                 }
 
                 switch (data.stake_contract) {
                     case '0x04C7393e4CC11FE9177aCa68594Aef72a40166d9': //bnb
-                        data.stake_contract = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
+                        priceToken = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
                         break;
                     case '0x9224c6e69c2237c9620eb1F4b7cBB8E53D21ea46': //babydoge
-                        data.stake_contract = '0xc748673057861a797275cd8a068abb95a902e8de';
+                        priceToken = '0xc748673057861a797275cd8a068abb95a902e8de';
                         break;
                     case '0xfF6AB02b94a830a9f8d2272001c2adA7C8035068': //usdt
-                        data.stake_contract = '0x55d398326f99059ff775485246999027b3197955';
+                        priceToken = '0x55d398326f99059ff775485246999027b3197955';
                         break;
                     case '0x563d18D44660d459366785715B8cF6BbA7813474': //fakelp
-                        data.stake_contract = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
+                        priceToken = '0xc736ca3d9b1e90af4230bd8f9626528b3d4e0ee0';
                         break;
 
                 }
@@ -365,6 +443,7 @@ function calcAPR() {
 
 
                 if (data.is_lp === 'true') {
+
                     const contract = new ethers.Contract(data.reward_contract, abi, provider);
 
                     let lpSupply = await contract.totalSupply();
@@ -388,7 +467,7 @@ function calcAPR() {
                             let priceToken0 = response['data'].data.price;
                             let url = "https://api.pancakeswap.info/api/v2/tokens/" + token1
                             axios.get(url)
-                                .then(response => {
+                                .then(async response => {
                                     let priceToken1 = response['data'].data.price;
                                     let valueToken0 = reserveF0 * priceToken0;
                                     let valueToken1 = reserveF1 * priceToken1;
@@ -402,9 +481,7 @@ function calcAPR() {
 
                                     //validate with form
                                     let days = end.diff(start, 'days') + 1;
-                                    let apr = getApr(data.vid, days, price, total);
-
-                                    insertAPR(data.vid, apr);
+                                    await getApr(data.stake_contract, data.vid, days, price, total);
                                 })
                                 .catch(error => {
                                     console.log(error.message);
@@ -420,9 +497,18 @@ function calcAPR() {
 
 
                 } else {
+
                     let url = "https://api.pancakeswap.info/api/v2/tokens/" + data.reward_contract
+
+                    //remove
+                    if (priceToken) {
+                        url = "https://api.pancakeswap.info/api/v2/tokens/" + priceToken
+                    }
+                    //remove
+
+
                     axios.get(url)
-                        .then(response => {
+                        .then(async response => {
                             const contract = new ethers.Contract(data.reward_contract, minimalAbiToken, provider);
                             let price = response['data'].data.price;
                             let rewards = ethers.utils.formatUnits(data.reward_amount, getUnit(contract.decimals()));
@@ -433,9 +519,7 @@ function calcAPR() {
 
                             //validate with form
                             let days = end.diff(start, 'days') + 1;
-                            let apr = getApr(data.vid, days, price, total);
-
-                            insertAPR(data.vid, apr);
+                            await getApr(data.stake_contract, data.vid, days, price, total);
                         })
                         .catch(error => {
                             console.log(error);
@@ -444,34 +528,6 @@ function calcAPR() {
             }
         }
     });
-
-
-    function insertAPR(vid, total) {
-
-        var sql = `select *
-                   from vaults_apr
-                   where vid = ?`
-
-        console.log(total);
-
-        var params = [moment().unix(), total, vid]
-
-        db.get(sql, [vid], function (err, result) {
-            let sql = `UPDATE vaults_apr
-                       set date = ?,
-                           apr  = ?
-                       where vid = ?`
-
-            if (!result) {
-                sql = `INSERT INTO vaults_apr (date, apr, vid)
-                       VALUES (?, ?, ?)`
-            }
-
-            db.run(sql, params, function (err, result) {
-            });
-
-        });
-    }
 }
 
 calcAPR()
