@@ -242,7 +242,7 @@ function savedProcessedNonLp(stake_contract, reward_contract) {
                where contract = ?`
 
         params = [
-            contract,
+            stake_contract,
         ]
 
         db.get(sql, params, function (err, result) {
@@ -251,12 +251,12 @@ function savedProcessedNonLp(stake_contract, reward_contract) {
                            VALUES (?, ?)`
 
                 var params = [
-                    contract,
+                    stake_contract,
                     name
                 ]
 
                 db.run(sql, params, function (err, result) {
-                    updateTokenImgIdForContract(contract)
+                    updateTokenImgIdForContract(stake_contract)
                 });
             }
         });
