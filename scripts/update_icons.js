@@ -332,7 +332,6 @@ function updateTokenImgIdForContract(contract) {
         contract,
     ]
 
-
     db.get(sql, params, function (err, result) {
 
         var sql = `update vaults
