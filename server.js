@@ -140,6 +140,7 @@ function addVote(res, vaultId, voteOption, userId) {
 
     db.run(sql, params, function (err, result) {
         if (err) {
+            console.log(err.message)
             res.status(500).json("Error user voting.")
             return;
         }
