@@ -15,6 +15,7 @@ function getIcons() {
 
     db.all(sql, params, async (err, row) => {
         if (err) {
+            console.log('hasasa');
             //res.status(500).json("Error voting.")
         }
 
@@ -59,7 +60,7 @@ function getIcons() {
 
                 if (processedContracts.includes(data.reward_contract)) {
                     if (data.tokenImgId === 0) {
-                        updateTokenImgIdForContract(data.contract);
+                        updateTokenImgIdForContract(data.reward_contract);
                     }
                     console.log('already processed');
                     continue;
@@ -108,6 +109,7 @@ function getIcons() {
                                 savedProcessedNonLp(data.stake_contract, data.reward_contract)
                             });
                         }).catch(error => {
+                            console.log(error)
                             const downloadPath = __dirname + "/icons/noimagetoken.png";
                             savedProcessedNonLp(data.stake_contract, data.reward_contract)
                         });
@@ -258,6 +260,8 @@ function savedProcessedNonLp(stake_contract, reward_contract) {
                 db.run(sql, params, function (err, result) {
                     updateTokenImgIdForContract(stake_contract)
                 });
+            }else{
+                updateTokenImgIdForContract(stake_contract)
             }
         });
     } else {
