@@ -15,7 +15,7 @@ function getIcons() {
 
     db.all(sql, params, async (err, row) => {
         if (err) {
-            res.status(500).json("Error voting.")
+            //res.status(500).json("Error voting.")
         }
 
         if (row) {
