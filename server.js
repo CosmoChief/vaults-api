@@ -415,14 +415,19 @@ app.get("/api/vaults/pinned", (req, res, next) => {
     var sql = `SELECT v.*,
                       COUNT(uv.id) AS votes,
                       vrv.usd_rewards_value,
-                      vpr.apr
+                      vpr.apr,
+                      icon.stake_image_main,
+                      icon.stake_image_lp_image,
+                      icon.reward_image_main,
+                      icon.reward_image_lp_image
                FROM vaults as v
                         LEFT JOIN users_votes as uv
                                   ON v.vid = uv.vid
                         LEFT JOIN vaults_rewards_value as vrv
                                   ON v.vid = vrv.vid
                         LEFT JOIN vaults_apr as vpr 
-                            ON v.vid = vpr.vid
+                            ON v.vid = vpr.vid         
+                        LEFT JOIN token_icons as icon ON icon.stake_contract = v.stake_contract and icon.reward_contract = v.reward_contract   
                WHERE v.pinned = 1
                GROUP BY v.id
                order by v.id desc`
@@ -530,7 +535,7 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
         "rewards": "ORDER BY CAST(usd_rewards_value as INTERGER) DESC;",
     }
 
-    let selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value, apr FROM vaults as v"
+    let selector = "SELECT v.*, COUNT(uv.id) AS votes, vrv.usd_rewards_value, icon.stake_image_main, icon.stake_image_lp_image,  icon.reward_image_main, icon.reward_image_lp_image, apr FROM vaults as v"
 
     if (staked === 'true') {
         selector = selector + " JOIN vault_users as uvs on uvs.vid = v.vid " +
@@ -546,6 +551,7 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
 
     const vaultRewardsJoin = " LEFT JOIN vaults_rewards_value as vrv ON v.vid = vrv.vid"
     let vaultAPRJoin = " LEFT JOIN vaults_apr as vpr ON v.vid = vpr.vid"
+    let vaultIconJoin = " LEFT JOIN token_icons as icon ON icon.stake_contract = v.stake_contract and icon.reward_contract = v.reward_contract"
 
 
     let where = " where pinned = 0"
@@ -576,6 +582,7 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
         userVoteJoin +
         vaultRewardsJoin +
         vaultAPRJoin +
+        vaultIconJoin +
         where +
         groupBy +
         sortBy;
