@@ -11,7 +11,7 @@ var userAddress = null;
 var cors = require('cors');
 var bigInt = require("big-integer");
 var sanitizer = require('sanitizer');
-const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-2-s2.binance.org:8545/');
+const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s1.binance.org:8545/');
 
 const minABI = [
     {
@@ -79,8 +79,8 @@ async function addVault(res, data) {
         data.vid,
         data.name,
         data.is_lp,
-        data.stake_contract,
-        data.reward_contract,
+        data.stake_contract.toLowerCase(),
+        data.reward_contract.toLowerCase(),
         start,
         end,
         data.reward
@@ -172,8 +172,8 @@ function validateVaultPost(postData) {
         errors.push(["Invalid vid"]);
     }
 
-    if (postData.is_lp !== "true" && postData.is_lp !== "false") {
-        errors.push(["Vault id must be informed"]);
+    if (postData.is_lp !== "true" && postData.is_lp !== "false" && postData.is_lp !== false) {
+        errors.push(["Is lp invalid"]);
     }
 
     if (postData.stake_contract == null) {

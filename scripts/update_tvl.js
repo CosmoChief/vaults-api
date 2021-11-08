@@ -303,7 +303,7 @@ var minimalAbiToken = [{
     "outputs": [{"type": "uint256"}]
 }];
 const ethers = require('ethers');
-const vaultAddress = "0x82B4aF97AC6Ad1055645191618De65c11170A593";
+const vaultAddress = "0x625Aba8e6414F25e9375a44b1e7188C0df4Adc86";
 const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s3.binance.org:8545/');
 
 function getUnit(decimals) {
