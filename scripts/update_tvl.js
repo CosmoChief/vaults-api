@@ -321,7 +321,7 @@ function getUnit(decimals) {
 }
 
 function calcTvl() {
-    var sql = 'select * from vaults where id = 7'
+    var sql = 'select * from vaults where id'
     var params = []
     const vaultContract = new ethers.Contract(vaultAddress, vaultAbi, provider);
     db.all(sql, params, async (err, row) => {
@@ -366,16 +366,16 @@ function calcTvl() {
                 // remove
                 if (data.is_lp === 'true') {
                     if (data.reward_contract === data.stake_contract) {
-                        //writeSingleTvl(true, data.vid, vaultInfo, data.stake_contract)
+                        writeSingleTvl(true, data.vid, vaultInfo, data.stake_contract)
                     } else {
                         console.log('GOOOOOOOOOOOO');
                         writeMultiTvl(true, data.vid, vaultInfo, data.stake_contract, data.reward_contract)
                     }
                 } else {
                     if (data.reward_contract === data.stake_contract) {
-                        //writeSingleTvl(false, data.vid, vaultInfo, data.reward_contract)
+                        writeSingleTvl(false, data.vid, vaultInfo, data.reward_contract)
                     } else {
-                        //writeMultiTvl(false, data.vid, vaultInfo, data.stake_contract, data.reward_contract)
+                        writeMultiTvl(false, data.vid, vaultInfo, data.stake_contract, data.reward_contract)
                     }
                 }
             }
@@ -832,6 +832,8 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let totalSumStake = valueTokenStake0 + valueTokenStake1;
                                     let priceStake = totalSumStake / supplyStake;
                                     let totalStake = (parseFloat(usersAmount) * parseFloat(priceStake))
+
+                                    console.log('price stake total' +totalStake)
 
                                     let rewardTotal = priceReward * parseFloat(rewardAmount)
                                     let total = (totalStake + rewardTotal).toString()
