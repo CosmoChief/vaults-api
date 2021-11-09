@@ -426,6 +426,7 @@ function calcAPR() {
 
                 if (data.is_lp === 'true') {
 
+                    /*
                     const contract = new ethers.Contract(data.reward_contract, abi, provider);
 
                     let lpSupply = await contract.totalSupply();
@@ -477,7 +478,7 @@ function calcAPR() {
                             console.log('token1 ' + token1);
                         });
 
-
+                    */
                 } else {
 
                     let url = "https://api.pancakeswap.info/api/v2/tokens/" + data.reward_contract
@@ -506,6 +507,7 @@ function calcAPR() {
                         .catch(error => {
                             console.log(error);
                         });
+
                 }
             }
         }

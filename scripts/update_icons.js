@@ -26,9 +26,19 @@ function getIcons() {
                 if (data.is_lp === 'true') {
                     if (data.stake_contract === data.reward_contract) {
                         try {
+                            const stakeContract = new ethers.Contract(
+                                ethers.utils.getAddress(data.stake_contract),
+                                abi,
+                                provider
+                            );
                             let token0 = await stakeContract.token0();
                             let token1 = await stakeContract.token1();
-                            let stakeImages = await downloadImage(rewardContract.address)
+                            let stakeImagesToken0 = await downloadImage(token0)
+                            let stakeImagesToken01 = await downloadImage(token1)
+
+                            let stakeImages = [];
+                            stakeImages[0] = stakeImagesToken0;
+                            stakeImages[1] = stakeImagesToken01;
 
                             addIcons(true, data.stake_contract, data.reward_contract, stakeImages)
 
