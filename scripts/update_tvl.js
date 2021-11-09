@@ -688,6 +688,7 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
                     token1Reward = '0x55d398326f99059ff775485246999027b3197955';
                     break;
             }
+            // remove
 
             let urlTokenStake0 = "https://api.pancakeswap.info/api/v2/tokens/" + token0Stake
             let urlTokenStake1 = "https://api.pancakeswap.info/api/v2/tokens/" + token1Stake
@@ -840,7 +841,7 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
 
                                     addTVL(vid, total)
 
-                                    console.log('Added CRAZY')
+                                    console.log('Added')
 
                                 })
                                 .catch(error => {
@@ -939,7 +940,7 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
 
                                     addTVL(vid, total)
 
-                                    console.log('Added LUECO')
+                                    console.log('Added')
                                 })
                                 .catch(error => {
                                 });
