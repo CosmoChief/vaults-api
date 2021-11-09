@@ -743,13 +743,13 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                             let apr = getApr(start, end, totalReward, stakedTotal)
 
                                             console.log('---APR--BOTH--LP--');
-                                            console.log(rewardTotal);
+                                            console.log(totalReward);
                                             console.log(stakedTotal);
                                             console.log('------');
                                             console.log(apr)
                                             console.log('------');
 
-
+                                            insertAPR(vid,apr)
                                             console.log('Added')
                                         })
                                         .catch(error => {
@@ -849,14 +849,13 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let valueTokenStake1 = reserveF1Stake * priceTokenStake1;
                                     let totalSumStake = valueTokenStake0 + valueTokenStake1;
                                     let priceStake = totalSumStake / supplyStake;
-                                    let totalStake = (parseFloat(usersAmount) * parseFloat(priceStake))
 
-                                    console.log('price stake total' + totalStake)
+                                    let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward).toString()
+                                    let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake).toString()
 
-                                    let rewardTotal = priceReward * parseFloat(rewardAmount)
-                                    let total = (totalStake + rewardTotal).toString()
+                                    let apr = getApr(start, end, totalReward, stakeTotal)
 
-                                    addTVL(vid, total)
+                                    insertAPR(vid, apr)
 
                                     console.log('Added')
 
