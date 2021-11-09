@@ -1,5 +1,5 @@
 // Create express app
-var db = require("../database.js")
+var db = require("/var/www/babyapi/database.js")
 const axios = require('axios');
 var fs = require('fs');
 var request = require('request');
