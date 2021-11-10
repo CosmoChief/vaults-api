@@ -890,7 +890,7 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
             let reserve0Reward = reservesReward._reserve0;
             let reserveF0Reward = ethers.utils.formatUnits(reserve0Reward, getUnit(decimalsToken0Reward));
             let reserve1Reward = reservesReward._reserve1;
-            let reserveF1Reward = ethers.utils.formatUnits(reserve1Reward, getUnit(decimalsToken0Reward));
+            let reserveF1Reward = ethers.utils.formatUnits(reserve1Reward, getUnit(decimalsToken1Reward));
 
             //remove - god this was so much work
             switch (token0Reward.toLowerCase()) {
@@ -955,7 +955,7 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let valueTokenReward0 = reserveF0Reward * priceTokenReward0;
                                     let valueTokenReward1 = reserveF1Reward * priceTokenReward1;
                                     let totalSumReward = valueTokenReward0 + valueTokenReward1;
-                                    let priceReward = totalSumReward / supplyReward;
+                                    let priceReward = totalSumReward / lpSupplyReward;
                                     let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward)
                                     let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake)
 
