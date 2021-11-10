@@ -326,7 +326,7 @@ function calcAPR() {
     const vaultContract = new ethers.Contract(vaultAddress, vaultAbi, provider);
     db.all(sql, params, async (err, row) => {
 
-        if(err) {
+        if (err) {
             console.log(err);
         }
 
@@ -859,6 +859,7 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward).toString()
                                     let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake).toString()
 
+
                                     let apr = getApr(start, end, totalReward, stakeTotal)
 
                                     insertAPR(vid, apr)
@@ -936,7 +937,6 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
             let urlTokenReward1 = "https://api.pancakeswap.info/api/v2/tokens/" + token1Reward
             let urlTokenStake = "https://api.pancakeswap.info/api/v2/tokens/" + stake_token
 
-            console.log('ready for some reqs -> reward is lp')
             axios.get(urlTokenReward0)
                 .then(response => {
                     console.log('got price stake 0')
@@ -956,10 +956,14 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let valueTokenReward1 = reserveF1Reward * priceTokenReward1;
                                     let totalSumReward = valueTokenReward0 + valueTokenReward1;
                                     let priceReward = totalSumReward / supplyReward;
-                                    let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward)
-                                    let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake)
+                                    let stakedTotal = 1
+                                    if (parseInt(usersAmount) > 0) {
+                                        stakedTotal = (parseFloat(usersAmount) * parseFloat(priceStake))
+                                    }
 
-                                    let apr = getApr(start, end, totalReward, stakeTotal)
+                                    let totalReward = (parseFloat(rewardAmount) * parseFloat(priceReward)).toString()
+
+                                    let apr = getApr(start, end, totalReward, stakedTotal)
 
                                     insertAPR(vid, apr)
                                 })
