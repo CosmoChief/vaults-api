@@ -956,12 +956,12 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let valueTokenReward1 = reserveF1Reward * priceTokenReward1;
                                     let totalSumReward = valueTokenReward0 + valueTokenReward1;
                                     let priceReward = totalSumReward / supplyReward;
-                                    let totalReward = (parseFloat(rewardAmount) * parseFloat(priceReward))
+                                    let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward)
                                     let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake)
 
-                                    let apr = getApr(data.start, data.end, totalReward, stakeTotal)
+                                    let apr = getApr(start, end, totalReward, stakeTotal)
 
-                                    console.log(apr)
+                                    insertAPR(vid, apr)
                                 })
                                 .catch(error => {
                                     console.log(error);
