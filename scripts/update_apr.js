@@ -321,7 +321,7 @@ function getUnit(decimals) {
 }
 
 function calcAPR() {
-    var sql = 'select * from vaults'
+    var sql = 'select * from vaults where vid = 11'
     var params = []
     const vaultContract = new ethers.Contract(vaultAddress, vaultAbi, provider);
     db.all(sql, params, async (err, row) => {
@@ -855,12 +855,13 @@ async function writeMultiApr(isLP = false, vid, vaultInfo, stake_token, reward_t
                                     let valueTokenStake1 = reserveF1Stake * priceTokenStake1;
                                     let totalSumStake = valueTokenStake0 + valueTokenStake1;
                                     let priceStake = totalSumStake / supplyStake;
-
+                                    let stakedTotal = 1
+                                    if (parseInt(usersAmount) > 0) {
+                                        stakedTotal = parseFloat(usersAmount) * parseFloat(priceStake).toString();
+                                    }
                                     let totalReward = parseFloat(rewardAmount) * parseFloat(priceReward).toString()
-                                    let stakeTotal = parseFloat(usersAmount) * parseFloat(priceStake).toString()
 
-
-                                    let apr = getApr(start, end, totalReward, stakeTotal)
+                                    let apr = getApr(start, end, totalReward, stakedTotal)
 
                                     insertAPR(vid, apr)
 
