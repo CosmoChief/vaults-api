@@ -190,6 +190,7 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
             reward_contract
         ]
 
+
         db.get(sql, params, function (err, result) {
             if (result === undefined) {
                 if (isLp) {
@@ -233,8 +234,8 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
                  and reward_contract = ?`
 
         params = [
-            reward_contract,
             stake_contract,
+            reward_contract,
         ]
 
         db.get(sql, params, function (err, result) {

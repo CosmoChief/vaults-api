@@ -12,6 +12,7 @@ var cors = require('cors');
 var bigInt = require("big-integer");
 var sanitizer = require('sanitizer');
 const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s1.binance.org:8545/');
+var abi = '[{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"}],"name":"Mint","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0In","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1In","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount0Out","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1Out","type":"uint256"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"Swap","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint112","name":"reserve0","type":"uint112"},{"indexed":false,"internalType":"uint112","name":"reserve1","type":"uint112"}],"name":"Sync","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"constant":true,"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"MINIMUM_LIQUIDITY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"PERMIT_TYPEHASH","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"burn","outputs":[{"internalType":"uint256","name":"amount0","type":"uint256"},{"internalType":"uint256","name":"amount1","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"factory","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getReserves","outputs":[{"internalType":"uint112","name":"_reserve0","type":"uint112"},{"internalType":"uint112","name":"_reserve1","type":"uint112"},{"internalType":"uint32","name":"_blockTimestampLast","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_token0","type":"address"},{"internalType":"address","name":"_token1","type":"address"}],"name":"initialize","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"kLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"mint","outputs":[{"internalType":"uint256","name":"liquidity","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"nonces","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"permit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"price0CumulativeLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"price1CumulativeLast","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"}],"name":"skim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount0Out","type":"uint256"},{"internalType":"uint256","name":"amount1Out","type":"uint256"},{"internalType":"address","name":"to","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"swap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"sync","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"token1","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]'
 
 const minABI = [
     {
@@ -46,17 +47,61 @@ var createUser = function (callback) {
 };
 
 async function getContractNames(stake, reward) {
-    let name
+    let name;
+    let stakeContractIsLP;
+    let rewardContractIsLP;
+
+    const contractStake = new ethers.Contract(stake, abi, provider);
+    const contractReward = new ethers.Contract(reward, abi, provider);
+
     try {
-        if (stake === reward) {
-            const contractStake = new ethers.Contract(stake, minABI, provider);
-            name = sanitizer.sanitize(await contractStake.symbol());
+        await contractStake.token0();
+        stakeContractIsLP = true;
+    } catch (e) {
+        stakeContractIsLP = false;
+    }
+
+    try {
+        await contractReward.token0();
+        rewardContractIsLP = true;
+    } catch (e) {
+        rewardContractIsLP = false;
+    }
+
+    try {
+        if (!stakeContractIsLP && !rewardContractIsLP) {
+            name = "Stake "+ await contractStake.symbol()+" Earn "+ await contractReward.symbol()
+        } else if (stakeContractIsLP && rewardContractIsLP) {
+            let nameToken0Stake = await contractStake.token0()
+            let nameToken1Stake = await contractStake.token1()
+            let contractTokenStake0 = new ethers.Contract(nameToken0Stake, abi, provider);
+            let contractTokenStake1 = new ethers.Contract(nameToken1Stake, abi, provider);
+            let nameToken0Reward = await contractReward.token0()
+            let nameToken1Reward = await contractReward.token1()
+            let contractTokenReward0 = new ethers.Contract(nameToken0Reward, abi, provider);
+            let contractTokenReward1 = new ethers.Contract(nameToken1Reward, abi, provider);
+
+            let namePartOne = await contractTokenStake0.symbol() + "/" + await contractTokenStake1.symbol()
+            let namePartTwo = await contractTokenReward0.symbol() + "/" + await contractTokenReward1.symbol()
+
+            name = "Stake "+ namePartOne + " LP Earn "+namePartTwo+ " LP "
+
+        } else if (stakeContractIsLP) {
+            let nameToken0Stake = await contractStake.token0()
+            let nameToken1Stake = await contractStake.token1()
+            let contractTokenStake0 = new ethers.Contract(nameToken0Stake, abi, provider);
+            let contractTokenStake1 = new ethers.Contract(nameToken1Stake, abi, provider);
+            let namePartOne = await contractTokenStake0.symbol() + "/" + await contractTokenStake1.symbol()
+
+            name = "Stake "+ namePartOne + " LP Earn "+ await contractReward.symbol()
         } else {
-            const contractStake = new ethers.Contract(stake, minABI, provider);
-            const contractReward = new ethers.Contract(reward, minABI, provider);
-            let nameStake = sanitizer.sanitize(await contractStake.symbol());
-            let nameReward = sanitizer.sanitize(await contractReward.symbol());
-            name = nameStake + " / " + nameReward;
+            let nameToken0Reward = await contractReward.token0()
+            let nameToken1Reward = await contractReward.token1()
+            let contractTokenReward0 = new ethers.Contract(nameToken0Reward, abi, provider);
+            let contractTokenReward1 = new ethers.Contract(nameToken1Reward, abi, provider);
+            let namePartTwo = await contractTokenReward0.symbol() + "/" + await contractTokenReward1.symbol()
+
+            name = "Stake "+ await contractStake.symbol()+" Earn "+ namePartTwo+" LP"
         }
     } catch (e) {
         console.log(e.message)
@@ -68,22 +113,23 @@ async function getContractNames(stake, reward) {
 
 async function addVault(res, data) {
     var sql = `INSERT INTO vaults
-               (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+               (vid, name, is_lp, stake_contract, reward_contract, start, [end], reward_amount, active)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
     let start = moment().unix();
     let end = moment().add(data.days, 'days').unix();
     data.name = await getContractNames(data.stake_contract, data.reward_contract);
 
     var params = [
-        data.vid,
-        data.name,
-        data.is_lp,
-        data.stake_contract.toLowerCase(),
-        data.reward_contract.toLowerCase(),
-        start,
-        end,
-        data.reward
+        sanitizer.sanitize(data.vid),
+        sanitizer.sanitize(data.name),
+        sanitizer.sanitize(data.is_lp),
+        sanitizer.sanitize(data.stake_contract.toLowerCase()),
+        sanitizer.sanitize(data.reward_contract.toLowerCase()),
+        sanitizer.sanitize(start),
+        sanitizer.sanitize(end),
+        sanitizer.sanitize(data.reward),
+        1
     ]
 
     db.run(sql, params, function (err, result) {
@@ -133,9 +179,9 @@ function addVote(res, vaultId, voteOption, userId) {
                VALUES (?, ?, ?)`
 
     var params = [
-        voteDate,
-        userId,
-        vaultId,
+        sanitizer.sanitize(voteDate),
+        sanitizer.sanitize(userId),
+        sanitizer.sanitize(vaultId),
     ]
 
     db.run(sql, params, function (err, result) {
@@ -425,9 +471,10 @@ app.get("/api/vaults/pinned", (req, res, next) => {
                                   ON v.vid = uv.vid
                         LEFT JOIN vaults_rewards_value as vrv
                                   ON v.vid = vrv.vid
-                        LEFT JOIN vaults_apr as vpr 
-                            ON v.vid = vpr.vid         
-                        LEFT JOIN token_icons as icon ON icon.stake_contract = v.stake_contract and icon.reward_contract = v.reward_contract   
+                        LEFT JOIN vaults_apr as vpr
+                                  ON v.vid = vpr.vid
+                        LEFT JOIN token_icons as icon
+                                  ON icon.stake_contract = v.stake_contract and icon.reward_contract = v.reward_contract
                WHERE v.pinned = 1
                GROUP BY v.id
                order by v.id desc`
@@ -605,8 +652,8 @@ app.post("/api/vault/pin/:id", (req, res, next) => {
     }
 
     const params = [
-        status,
-        req.params.id,
+        sanitizer.sanitize(status),
+        sanitizer.sanitize(req.params.id),
     ]
 
     db.run('UPDATE vaults set pinned = ? WHERE vid = ?', params, (err, result) => {
