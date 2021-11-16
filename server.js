@@ -39,7 +39,7 @@ app.listen(HTTP_PORT, () => {
 
 var createUser = function (callback) {
     var sql = "select * from users where address = ?"
-    var params = [userAddress.toLowerCase()]
+    var params = [sanitizer.sanitize(userAddress.toLowerCase())]
     var data = null;
     db.get(sql, params, (err, row) => {
         callback(err, row);
@@ -134,7 +134,6 @@ async function addVault(res, data) {
 
     db.run(sql, params, function (err, result) {
         if (err) {
-            console.log(err.message)
             res.json({
                 "message": "error",
                 "data": "Couldn't create Vault"
@@ -264,7 +263,7 @@ function validateBigNumber(number) {
 
 function validateVoteVault(res, vaultId, voteOption, userId) {
     var sql = "select * from vaults where vid = ?"
-    var params = [vaultId]
+    var params = [sanitizer.sanitize(vaultId)]
     db.get(sql, params, (err, row) => {
         if (!row) {
             res.status(500).json({
@@ -282,7 +281,7 @@ function validateUserVote(res, vaultId, voteOption, userId) {
     var sql = "select * from users_votes where uid = ? " +
         "and DATETIME(date, 'unixepoch') >= datetime('now','-24 hours')";
 
-    var params = [userId]
+    var params = [sanitizer.sanitize(userId)]
     db.get(sql, params, (err, row) => {
         if (row) {
             res.status(500).json({
@@ -327,10 +326,9 @@ app.post("/api/vault/stake/:id", async (req, res, next) => {
     let vid = sanitizer.sanitize(req.params.id);
     let userAddress = sanitizer.sanitize(req.body.address);
 
-    console.log(userAddress);
 
     var sql = 'select * from users where address = ? '
-    var params = [userAddress.toLowerCase()]
+    var params = [sanitizer.sanitize(userAddress.toLowerCase())]
     db.get(sql, params, (err, userRow) => {
         if (err) {
             res.status(500).json({
@@ -370,7 +368,7 @@ app.post("/api/vault/stake/:id", async (req, res, next) => {
 
 var getStakedVaults = function (vid, uid, callback) {
     var sql = "select * from vault_users where vid = ? and uid = ?"
-    var params = [vid, uid]
+    var params = [sanitizer.sanitize(vid), sanitizer.sanitize(uid)]
     db.get(sql, params, (err, row) => {
         callback(err, row);
     });
@@ -705,7 +703,7 @@ app.post("/api/vault/vote/:id", (req, res, next) => {
     const voteOption = 1;
 
     var sql = 'select * from users where address = ? '
-    var params = [userAddress.toLowerCase()]
+    var params = [sanitizer.sanitize(userAddress.toLowerCase())]
     db.get(sql, params, (err, row) => {
         if (err) {
             res.status(500).json({
