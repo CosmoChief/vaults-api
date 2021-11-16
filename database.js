@@ -10,7 +10,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
       //throw err
     }else{
         console.log('Connected to the SQLite database.')
-       /* db.run(`CREATE TABLE "vaults" (
+        /*db.run(`CREATE TABLE "vaults" (
                 "id"	INTEGER PRIMARY KEY,
                 "name"	TEXT NOT NULL,
                 "vid"	INTEGER UNIQUE NOT NULL,
@@ -21,7 +21,8 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 "start"	INTEGER,
                 "end"	INTEGER,
                 "pinned"	NUMERIC DEFAULT 0,
-                "reward_amount"	TEXT NOT NULL
+                "reward_amount"	TEXT NOT NULL,
+                "active"	NUMERIC DEFAULT 1
             );`)
 
         db.run(`CREATE TABLE "users"

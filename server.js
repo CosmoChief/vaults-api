@@ -70,7 +70,7 @@ async function getContractNames(stake, reward) {
 
     try {
         if (!stakeContractIsLP && !rewardContractIsLP) {
-            name = "Stake "+ await contractStake.symbol()+" Earn "+ await contractReward.symbol()
+            name = "Stake " + await contractStake.symbol() + " Earn " + await contractReward.symbol()
         } else if (stakeContractIsLP && rewardContractIsLP) {
             let nameToken0Stake = await contractStake.token0()
             let nameToken1Stake = await contractStake.token1()
@@ -84,7 +84,7 @@ async function getContractNames(stake, reward) {
             let namePartOne = await contractTokenStake0.symbol() + "/" + await contractTokenStake1.symbol()
             let namePartTwo = await contractTokenReward0.symbol() + "/" + await contractTokenReward1.symbol()
 
-            name = "Stake "+ namePartOne + " LP Earn "+namePartTwo+ " LP "
+            name = "Stake " + namePartOne + " LP Earn " + namePartTwo + " LP "
 
         } else if (stakeContractIsLP) {
             let nameToken0Stake = await contractStake.token0()
@@ -93,7 +93,7 @@ async function getContractNames(stake, reward) {
             let contractTokenStake1 = new ethers.Contract(nameToken1Stake, abi, provider);
             let namePartOne = await contractTokenStake0.symbol() + "/" + await contractTokenStake1.symbol()
 
-            name = "Stake "+ namePartOne + " LP Earn "+ await contractReward.symbol()
+            name = "Stake " + namePartOne + " LP Earn " + await contractReward.symbol()
         } else {
             let nameToken0Reward = await contractReward.token0()
             let nameToken1Reward = await contractReward.token1()
@@ -101,7 +101,7 @@ async function getContractNames(stake, reward) {
             let contractTokenReward1 = new ethers.Contract(nameToken1Reward, abi, provider);
             let namePartTwo = await contractTokenReward0.symbol() + "/" + await contractTokenReward1.symbol()
 
-            name = "Stake "+ await contractStake.symbol()+" Earn "+ namePartTwo+" LP"
+            name = "Stake " + await contractStake.symbol() + " Earn " + namePartTwo + " LP"
         }
     } catch (e) {
         console.log(e.message)
@@ -134,6 +134,7 @@ async function addVault(res, data) {
 
     db.run(sql, params, function (err, result) {
         if (err) {
+            console.log(err.message)
             res.json({
                 "message": "error",
                 "data": "Couldn't create Vault"
@@ -452,6 +453,28 @@ app.get("/api/tvl", (req, res, next) => {
         res.json({
             "message": "success",
             "data": data.total
+        })
+    });
+});
+
+
+app.get("/api/updater", (req, res, next) => {
+    var sql = `select va.vid, va.apr, vrv.usd_rewards_value
+               from vaults_apr va
+                        join vaults_rewards_value vrv on va.vid = vrv.vid;`
+
+    var params = []
+    db.all(sql, params, (err, data) => {
+        if (err) {
+            res.status(400).json({
+                "error": err.message
+            });
+            return;
+        }
+
+        res.json({
+            "message": "success",
+            "data": data
         })
     });
 });

@@ -321,7 +321,7 @@ function getUnit(decimals) {
 }
 
 function calcAPR() {
-    var sql = 'select * from vaults where vid = 11'
+    var sql = 'select * from vaults'
     var params = []
     const vaultContract = new ethers.Contract(vaultAddress, vaultAbi, provider);
     db.all(sql, params, async (err, row) => {
@@ -421,6 +421,7 @@ async function writeSingleApr(isLp = false, vid, vaultInfo, token, start, end) {
                 }
 
                 let rewardTotal = (rewardAmount * priceToken1).toString();
+
                 let apr = getApr(start, end, rewardTotal, stakedTotal)
 
                 console.log('---APR---');
@@ -991,11 +992,11 @@ function getApr(startDate, endDate, rewardAmount, stakedAmount) {
     let start = moment(startDate * 1000)
     let end = moment(endDate * 1000)
 
-    let days = end.diff(start, 'days') + 1;
+    let days = end.diff(start, 'days');
 
     const dailyRate = rewardAmount / days;
     const annualizedYield = dailyRate * 365;
-    return (annualizedYield / stakedAmount);
+    return annualizedYield / stakedAmount * 100;
 }
 
 
