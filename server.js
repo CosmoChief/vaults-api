@@ -584,6 +584,7 @@ app.post("/api/vaults", (req, res, next) => {
             });
             return;
         }
+
         res.json({
             "message": "success",
             "data": rows
@@ -595,7 +596,7 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
 
     const querySort = {
         "new_to_old": "ORDER BY ID DESC;",
-        "sort_apr": "ORDER BY apr DESC;",
+        "sort_apr": "ORDER BY CAST(apr as INTERGER) DESC;",
         "end_date": "ORDER BY [end] DESC;",
         "most_votes": "ORDER BY votes DESC;",
         "most_votes_today": "ORDER BY votes DESC;",
