@@ -304,7 +304,7 @@ var minimalAbiToken = [{
 }];
 const ethers = require('ethers');
 const {add} = require("nodemon/lib/rules");
-const vaultAddress = "0xF653A248fa859CD43dFE1FFb5268E8c85115C91a";
+const vaultAddress = "0x951055B6E588855A6599aAEa2354f49800d842E8";
 const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s3.binance.org:8545/');
 
 function getUnit(decimals) {
