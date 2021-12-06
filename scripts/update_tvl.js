@@ -304,7 +304,7 @@ var minimalAbiToken = [{
 }];
 const ethers = require('ethers');
 const {add} = require("nodemon/lib/rules");
-const vaultAddress = "0x951055B6E588855A6599aAEa2354f49800d842E8";
+const vaultAddress = "0xD97732fd84c9F392D0386a24259d84220035CE9a";
 const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-1-s3.binance.org:8545/');
 
 function getUnit(decimals) {
@@ -328,6 +328,9 @@ function calcTvl() {
         if (row) {
             for (const data of row) {
                 let vaultInfo = await vaultContract.getVaultInfo(data.vid);
+
+                console.log(vaultInfo[0].toString())
+
                 // remove
                 let priceToken = false;
                 switch (data.reward_contract) {
@@ -524,6 +527,8 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
     let rewardAmount = ethers.utils.formatUnits(vaultInfo[0].toString(), getUnit(rewardDecimals));
     let usersAmount = ethers.utils.formatUnits(vaultInfo[7].toString(), getUnit(stakeDecimals));
 
+    console.log(rewardAmount);
+
     if (!isLP) {
         //remove
         switch (stake_token) {
@@ -563,6 +568,7 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
                         let priceStake = stakePrice['data'].data.price;
                         let priceReward = rewardPrice['data'].data.price;
 
+
                         let stakedTotal = 0
                         if (parseInt(usersAmount) > 0) {
                             stakedTotal = priceStake * usersAmount
@@ -570,15 +576,13 @@ async function writeMultiTvl(isLP = false, vid, vaultInfo, stake_token, reward_t
                         let rewardTotal = priceReward * rewardAmount
                         let total = stakedTotal + rewardTotal;
 
-                        console.log(stake_token);
-                        console.log(reward_token);
-                        console.log(stakeUrl);
-                        console.log(rewardUrl);
-                        console.log('Reward total');
-                        console.log(rewardTotal);
-                        console.log('Staked total');
-                        console.log(stakedTotal);
-                        console.log('------');
+                        /*
+                        console.log(rewardAmount)
+                        console.log(usersAmount)
+                        console.log(stakedTotal)
+                        console.log(rewardTotal)
+                        console.log(total)
+                        */
                         addTVL(vid, total)
                     }).catch((error) => {
                     console.log(error)

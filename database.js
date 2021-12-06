@@ -1,8 +1,8 @@
 var sqlite3 = require('sqlite3').verbose()
 var md5 = require('md5')
 
-const DBSOURCE = "/var/www/babyapi/db.sqlite"
-//const DBSOURCE = "db.sqlite"
+//const DBSOURCE = "/var/www/babyapi/db.sqlite"
+const DBSOURCE = "db.sqlite"
 
 let db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {

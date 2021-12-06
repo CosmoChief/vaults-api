@@ -9,7 +9,8 @@ const provider = new ethers.providers.JsonRpcProvider('https://data-seed-prebsc-
 
 
 function getIcons() {
-    var sql = 'select * from vaults where token_icon_id = 0 '
+
+    var sql = 'select * from vaults where token_icon_id = 0'
     var params = []
 
 
@@ -62,6 +63,7 @@ function getIcons() {
                             abi,
                             provider
                         );
+
 
                         try {
                             await stakeContract.token0();
@@ -151,6 +153,8 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
     stake_contract = stake_contract.toLowerCase()
     reward_contract = reward_contract.toLowerCase()
 
+    console.log(stake_contract, reward_contract)
+
     // remove
     switch (stake_contract) {
         case '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': //bnb
@@ -175,7 +179,6 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
             break;
     }
     //remove
-
     let params = [];
     let sql = null;
 
@@ -238,6 +241,9 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
             reward_contract,
         ]
 
+        console.log(sql);
+        console.log(params);
+
         db.get(sql, params, function (err, result) {
             if (result === undefined) {
                 var sql = `INSERT INTO token_icons
@@ -269,6 +275,7 @@ function addIcons(isLp = false, stake_contract, reward_contract, stakeImages, re
                     params[4] = rewardImages
                     params[5] = ""
                 }
+
 
                 db.run(sql, params, function (err, result) {
                     if (err) {

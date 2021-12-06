@@ -622,7 +622,6 @@ function prepareQuery(sortRule, search, closed, isLp = false, staked = false) {
     let vaultAPRJoin = " LEFT JOIN vaults_apr as vpr ON v.vid = vpr.vid"
     let vaultIconJoin = " LEFT JOIN token_icons as icon ON icon.stake_contract = v.stake_contract and icon.reward_contract = v.reward_contract"
 
-
     let where = " where pinned = 0"
 
     if (isLp === 'false') {
